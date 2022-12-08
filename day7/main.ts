@@ -82,27 +82,40 @@ function getFileSizeMap(lines: string[]): Record<string, number> {
   return fileSizeMap.curSizes;
 }
 
-function main() {
-  const fileSizes = getFileSizeMap(parse(input));
+async function main() {
+  const text = await Deno.readTextFile("./day7/input.txt");
+
+  // const fileSizes = getFileSizeMap(parse(input));
+  const fileSizes = getFileSizeMap(parse(text));
 
   const allKeys = Object.keys(fileSizes);
-  const totalSizes = Object.entries(fileSizes).map(([path, size]) => {
+  const pathGroups = Object.entries(fileSizes).map(([path, size]) => {
     const subPaths = allKeys
-      .filter((key) => key !== path)
-      .filter((key) => key.startsWith(path));
-    const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], size);
+      .filter((key) => key.startsWith(path))
+      .sort((a, b) => a.split("/").length - b.split("/").length);
+    return { path, subPaths };
+  });
+
+  console.log(pathGroups);
+
+  // TODO: this is wrong, it's not fully recursing all subpaths and summing their sizes correctly
+  const totalSizes = Object.entries(fileSizes).map(([path, size]) => {
+    const subPaths = allKeys.filter((key) => key.startsWith(path));
+    console.log({ path, subPaths });
+    const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], 0);
     return [path, totalSize];
   });
 
-  const filteredDirectories = totalSizes.filter(
-    ([path, size]) => path !== "/" && size <= 100000
+  const filteredDirectories = totalSizes.filter(([_, size]) => size <= 100000);
+  const sum = filteredDirectories.reduce(
+    (acc, [_, size]) => acc + Number(size),
+    0
   );
-  const sum = filteredDirectories.reduce((acc, [_, size]) => acc + Number(size), 0);
 
+  console.log(fileSizes);
   console.log(totalSizes);
   console.log(filteredDirectories);
   console.log(sum);
-  // console.log(cleanedRootSizes);
 }
 
 main();
