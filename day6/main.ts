@@ -1,22 +1,20 @@
-const makeStartOfPacket =
-  (expectedSize: number) =>
-  (chars: string): number => {
-    let i = 0;
-    let tracker = new Map();
-    while (i < chars.length) {
-      if (tracker.size === expectedSize) {
-        break;
-      }
-      if (tracker.has(chars[i])) {
-        i = tracker.get(chars[i]);
-        tracker = new Map();
-      } else {
-        tracker.set(chars[i], i);
-      }
-      i++;
+const makeStartOfPacket = (expectedSize: number) => (chars: string): number => {
+  let i = 0;
+  let tracker = new Map();
+  while (i < chars.length) {
+    if (tracker.size === expectedSize) {
+      break;
     }
-    return i;
-  };
+    if (tracker.has(chars[i])) {
+      i = tracker.get(chars[i]);
+      tracker = new Map();
+    } else {
+      tracker.set(chars[i], i);
+    }
+    i++;
+  }
+  return i;
+};
 
 function main() {
   const inputs = [

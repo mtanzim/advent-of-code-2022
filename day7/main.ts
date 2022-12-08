@@ -77,7 +77,7 @@ function getFileSizeMap(lines: string[]): Record<string, number> {
         },
       };
     },
-    { curPath: [], curSizes: {} }
+    { curPath: [], curSizes: {} },
   );
 
   return fileSizeMap.curSizes;
@@ -110,7 +110,7 @@ async function main() {
   const filteredDirectories = totalSizes.filter(([_, size]) => size <= 100000);
   const sum = filteredDirectories.reduce(
     (acc, [_, size]) => acc + Number(size),
-    0
+    0,
   );
 
   console.log(fileSizes);

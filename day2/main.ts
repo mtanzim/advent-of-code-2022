@@ -53,7 +53,7 @@ function getOutcome(opp: Options, mine: Options): Outcomes {
       console.log({ opp, mine });
       console.log(JSON.stringify([opp, mine]));
       throw new Error(
-        "this should not happen, if JS only had real pattern matching :/"
+        "this should not happen, if JS only had real pattern matching :/",
       );
   }
 }
@@ -79,7 +79,7 @@ function getOption(opp: Options, outcome: Outcomes): Options {
       console.log({ opp, outcome });
       console.log(JSON.stringify([opp, outcome]));
       throw new Error(
-        "this should not happen, if JS only had real pattern matching :/"
+        "this should not happen, if JS only had real pattern matching :/",
       );
   }
 }

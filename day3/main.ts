@@ -61,7 +61,7 @@ async function part2() {
       }
       return { chunks: acc.chunks, ongoing };
     },
-    { chunks: [], ongoing: [] }
+    { chunks: [], ongoing: [] },
   ).chunks;
 
   const commonChar = chunked.map(([a, b, c]) => {
