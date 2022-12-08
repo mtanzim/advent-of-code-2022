@@ -1,3 +1,4 @@
+// TODO: come back to this, it's a tree height algo
 const input = `$ cd /
 $ ls
 dir a
