@@ -93,7 +93,15 @@ function main() {
     const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], size);
     return [path, totalSize];
   });
+
+  const filteredDirectories = totalSizes.filter(
+    ([path, size]) => path !== "/" && size <= 100000
+  );
+  const sum = filteredDirectories.reduce((acc, [_, size]) => acc + Number(size), 0);
+
   console.log(totalSizes);
+  console.log(filteredDirectories);
+  console.log(sum);
   // console.log(cleanedRootSizes);
 }
 
