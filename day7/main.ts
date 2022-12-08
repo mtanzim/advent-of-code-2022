@@ -84,38 +84,17 @@ function getFileSizeMap(lines: string[]): Record<string, number> {
 
 function main() {
   const fileSizes = getFileSizeMap(parse(input));
-  const rootSizes = Object.entries(fileSizes).reduce(
-    (acc: Record<string, number | undefined>, [path, size]) => {
-      // skip if root dir
-      if (path === "/") {
-        return {
-          ...acc,
-          [path]: undefined,
-        };
-      }
-      const tokens = path.split("/");
-      // at a 1st level dir, skip
-      if (tokens.length === 2) {
-        return acc;
-      }
-      // at a lower level dir, add size to the root level dir
-      const [_, layer1] = tokens;
-      const layer1Path = `/${layer1}`;
-      const layer1Size = fileSizes?.[layer1Path] || 0;
-      const updatedLayer1Size = layer1Size + size;
-      return {
-        ...acc,
-        [layer1Path]: updatedLayer1Size,
-        [path]: undefined,
-      };
-    },
-    fileSizes
-  );
-  const cleanedRootSizes = Object.fromEntries(
-    Object.entries(rootSizes).filter(([_, val]) => !!val)
-  );
-  console.log(fileSizes);
-  console.log(cleanedRootSizes);
+
+  const allKeys = Object.keys(fileSizes);
+  const totalSizes = Object.entries(fileSizes).map(([path, size]) => {
+    const subPaths = allKeys
+      .filter((key) => key !== path)
+      .filter((key) => key.startsWith(path));
+    const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], size);
+    return [path, totalSize];
+  });
+  console.log(totalSizes);
+  // console.log(cleanedRootSizes);
 }
 
 main();
