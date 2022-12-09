@@ -32,6 +32,55 @@ function traverseY(grid: number[][], { x, y }: Coord, v: number): boolean {
   return visible;
 }
 
+function findSceningScoreX(grid: number[][], { x, y }: Coord, v: number) {
+  const left = grid[y].slice(0, x);
+  const right = grid[y].slice(x + 1, grid[0].length);
+  let leftScore = 0;
+  for (const xVal of left.reverse()) {
+    leftScore++;
+    if (xVal >= v) {
+      break;
+    }
+  }
+  let rightScore = 0;
+
+  for (const xVal of right) {
+    rightScore++;
+    if (xVal >= v) {
+      break;
+    }
+  }
+  return { leftScore, rightScore };
+}
+
+function findSceningScoreY(grid: number[][], { x, y }: Coord, v: number) {
+  const col = grid.map((col) => col[x]);
+  const top = col.slice(0, y);
+  const bottom = col.slice(y + 1, col.length);
+  let topScore = 0;
+
+  for (const yVal of top.reverse()) {
+    topScore++;
+    if (yVal >= v) {
+      break;
+    }
+  }
+  if (x === 1 && y === 2) {
+    console.log("marker");
+    console.log(topScore);
+
+    console.log(top);
+  }
+  let bottomScore = 0;
+  for (const yVal of bottom) {
+    bottomScore++;
+    if (yVal >= v) {
+      break;
+    }
+  }
+  return { topScore, bottomScore };
+}
+
 async function main() {
   const testInput = `30373
 25512
@@ -61,6 +110,33 @@ async function main() {
     }
   }
   console.log(visibleTrees);
+
+  let maxScenicScore = 0;
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const val = grid[y][x];
+      const { leftScore, rightScore } = findSceningScoreX(grid, { x, y }, val);
+      const { topScore, bottomScore } = findSceningScoreY(grid, { x, y }, val);
+      const curScore = [topScore, bottomScore, leftScore, rightScore].reduce(
+        (acc, cur) => acc * cur,
+        1
+      );
+      console.log({
+        x,
+        y,
+        val,
+        leftScore,
+        rightScore,
+        topScore,
+        bottomScore,
+        curScore,
+      });
+      if (curScore > maxScenicScore) {
+        maxScenicScore = curScore;
+      }
+    }
+  }
+  console.log(maxScenicScore);
 }
 
 main();
