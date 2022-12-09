@@ -1,5 +1,5 @@
 // TODO: come back to this, it's a tree height algo
-const input = `$ cd /
+const _input = `$ cd /
 $ ls
 dir a
 14848514 b.txt
@@ -90,7 +90,7 @@ async function main() {
   const fileSizes = getFileSizeMap(parse(text));
 
   const allKeys = Object.keys(fileSizes);
-  const pathGroups = Object.entries(fileSizes).map(([path, size]) => {
+  const pathGroups = Object.entries(fileSizes).map(([path, _size]) => {
     const subPaths = allKeys
       .filter((key) => key.startsWith(path))
       .sort((a, b) => a.split("/").length - b.split("/").length);
@@ -100,7 +100,7 @@ async function main() {
   console.log(pathGroups);
 
   // TODO: this is wrong, it's not fully recursing all subpaths and summing their sizes correctly
-  const totalSizes = Object.entries(fileSizes).map(([path, size]) => {
+  const totalSizes = Object.entries(fileSizes).map(([path, _size]) => {
     const subPaths = allKeys.filter((key) => key.startsWith(path));
     console.log({ path, subPaths });
     const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], 0);

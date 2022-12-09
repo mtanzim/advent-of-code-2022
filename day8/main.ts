@@ -80,7 +80,7 @@ function findScenicScoreY(grid: number[][], { x, y }: Coord, v: number) {
   return { topScore, bottomScore };
 }
 
-const testInput = `30373
+const _testInput = `30373
 25512
 65332
 33549

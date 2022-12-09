@@ -80,4 +80,5 @@ async function part2() {
   console.log(sum);
 }
 
+part1();
 part2();
