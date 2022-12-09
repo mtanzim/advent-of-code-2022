@@ -8,52 +8,6 @@ interface Coord {
   y: number;
 }
 
-/*
-function dfs(
-  grid: number[][],
-  marked: Record<string, boolean>,
-  current: Coord
-): boolean {
-  const width = grid[0].length;
-  const height = grid.length;
-  const { x, y } = current;
-
-  // reached an edge, return true
-  if (x === width - 1 || y === height - 1 || x === 0 || y === 0) {
-    return true;
-  }
-  const getCoordKey = (c: Coord) => `${c.x}|${c.y}`;
-
-  marked[getCoordKey(current)] = true;
-
-  const left: Coord = { x: x - 1, y };
-  const right: Coord = { x: x + 1, y };
-  const top: Coord = { x, y: y - 1 };
-  const bottom: Coord = { x, y: y + 1 };
-
-  const neighbors: Coord[] = [];
-  // get valid neighbors
-  for (const c of [left, right]) {
-    if (c.x >= 0 && c.x < width) {
-      neighbors.push(c);
-    }
-  }
-  for (const c of [top, bottom]) {
-    if (c.y >= 0 && c.y < height) {
-      neighbors.push(c);
-    }
-  }
-  const curValue = grid[current.y][current.x];
-  // filter neighbors to ensure they are lower
-  const lowerNeighbors = neighbors.filter((c) => curValue > grid[c.y][c.x]);
-  const unmarkedNeighbors = lowerNeighbors.filter(
-    (c) => !marked[getCoordKey(c)]
-  );
-
-  return unmarkedNeighbors.some((n) => dfs(grid, marked, n));
-}
-*/
-
 function traverseX(grid: number[][], { x, y }: Coord, v: number): boolean {
   // go left
   const left = grid[y].slice(0, x);
