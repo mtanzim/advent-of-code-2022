@@ -11,16 +11,16 @@ interface Coord {
 function isVisibleX(grid: number[][], { x, y }: Coord, v: number): boolean {
   const { left, right } = getLeftRight(grid, { y, x });
 
-  const visible =
-    left.every((curVal) => curVal < v) || right.every((curVal) => curVal < v);
+  const visible = left.every((curVal) => curVal < v) ||
+    right.every((curVal) => curVal < v);
   return visible;
 }
 
 function isVisibleY(grid: number[][], { x, y }: Coord, v: number): boolean {
   const { top, bottom } = getTopBottom(grid, { x, y });
 
-  const visible =
-    top.every((curVal) => curVal < v) || bottom.every((curVal) => curVal < v);
+  const visible = top.every((curVal) => curVal < v) ||
+    bottom.every((curVal) => curVal < v);
 
   return visible;
 }
@@ -99,8 +99,8 @@ async function main() {
   for (let y = 1; y < height - 1; y++) {
     for (let x = 1; x < width - 1; x++) {
       const val = grid[y][x];
-      const isVisible =
-        isVisibleY(grid, { x, y }, val) || isVisibleX(grid, { x, y }, val);
+      const isVisible = isVisibleY(grid, { x, y }, val) ||
+        isVisibleX(grid, { x, y }, val);
 
       if (isVisible) {
         visibleTrees++;
@@ -118,7 +118,7 @@ async function main() {
       const { topScore, bottomScore } = findScenicScoreY(grid, { x, y }, val);
       const curScore = [topScore, bottomScore, leftScore, rightScore].reduce(
         (acc, cur) => acc * cur,
-        1
+        1,
       );
 
       if (curScore > maxScenicScore) {
