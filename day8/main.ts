@@ -23,7 +23,8 @@ function dfs(
   const height = grid.length;
   const { x, y } = current;
 
-  if (x === width || y === height) {
+  // reached an edge, return true
+  if (x === width - 1 || y === height - 1 || x === 0 || y === 0) {
     return true;
   }
 
@@ -37,35 +38,48 @@ function dfs(
   const neighbors: Coord[] = [];
   // get valid neighbors
   for (const c of [left, right]) {
-    if (c.x > 0 && c.x < width && !marked.get(c)) {
+    if (c.x >= 0 && c.x < width && !marked.get(c)) {
       neighbors.push(c);
     }
   }
   for (const c of [top, bottom]) {
-    if (c.y > 0 && c.y < height && !marked.get(c)) {
+    if (c.y >= 0 && c.y < height && !marked.get(c)) {
       neighbors.push(c);
     }
   }
+  const curValue = grid[current.y][current.x];
   // filter neighbors to ensure they are lower
-  const lowerNeighbors = neighbors.filter(
-    (c) => grid[current.y][current.x] > grid[c.y][c.x]
-  );
-  let foundEdge = false;
-  for (const n of lowerNeighbors) {
-    foundEdge = foundEdge || dfs(grid, marked, n);
-  }
-  marked.set(current, false);
-  return foundEdge;
+  const lowerNeighbors = neighbors.filter((c) => curValue > grid[c.y][c.x]);
+  // console.log({ curValue, neighbors, lowerNeighbors });
+  return lowerNeighbors.some((n) => dfs(grid, marked, n));
+  // let foundEdge = false;
+  // for (const n of lowerNeighbors) {
+  //   foundEdge = foundEdge || dfs(grid, marked, n);
+  // }
+  // marked.set(current, false);
+  // return foundEdge;
 }
 
-const grid = parse(input);
-console.log(grid);
+async function main() {
+  // const input = await Deno.readTextFile("./day8/input.txt");
+  const grid = parse(input);
+  // console.log(grid);
 
-// iterate over inner grid
-for (let y = 1; y < grid.length - 1; y++) {
-  for (let x = 1; x < grid[0].length - 1; x++) {
-    const initMap = new Map();
-    const hasEdge = dfs(grid, initMap, { x, y });
-    console.log({ val: grid[y][x], hasEdge });
+  const width = grid[0].length;
+  const height = grid.length;
+  let visibleTrees = 2 * width + 2 * height - 4;
+
+  // iterate over inner grid
+  for (let y = 1; y < grid.length - 1; y++) {
+    for (let x = 1; x < grid[0].length - 1; x++) {
+      const marked = new Map();
+      const hasEdge = dfs(grid, marked, { x, y });
+      if (hasEdge) {
+        visibleTrees++;
+      }
+    }
   }
+  console.log(visibleTrees);
 }
+
+main();
