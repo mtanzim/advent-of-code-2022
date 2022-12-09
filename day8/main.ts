@@ -9,9 +9,7 @@ interface Coord {
 }
 
 function isVisibleX(grid: number[][], { x, y }: Coord, v: number): boolean {
-  // go left
-  const left = grid[y].slice(0, x);
-  const right = grid[y].slice(x + 1, grid[0].length);
+  const { left, right } = getLeftRight(grid, { y, x });
 
   const visible =
     left.every((curVal) => curVal < v) || right.every((curVal) => curVal < v);
@@ -19,10 +17,7 @@ function isVisibleX(grid: number[][], { x, y }: Coord, v: number): boolean {
 }
 
 function isVisibleY(grid: number[][], { x, y }: Coord, v: number): boolean {
-  // go left
-  const col = grid.map((col) => col[x]);
-  const top = col.slice(0, y);
-  const bottom = col.slice(y + 1, col.length);
+  const { top, bottom } = getTopBottom(grid, { x, y });
 
   const visible =
     top.every((curVal) => curVal < v) || bottom.every((curVal) => curVal < v);
@@ -30,9 +25,16 @@ function isVisibleY(grid: number[][], { x, y }: Coord, v: number): boolean {
   return visible;
 }
 
+function getTopBottom(grid: number[][], { x, y }: Coord) {
+  const col = grid.map((col) => col[x]);
+
+  const top = col.slice(0, y).toReversed();
+  const bottom = col.slice(y + 1, col.length);
+  return { top, bottom };
+}
+
 function findScenicScoreX(grid: number[][], { x, y }: Coord, v: number) {
-  const left = grid[y].slice(0, x).toReversed();
-  const right = grid[y].slice(x + 1, grid[0].length);
+  const { left, right } = getLeftRight(grid, { y, x });
   let leftScore = 0;
   for (const xVal of left) {
     leftScore++;
@@ -51,10 +53,14 @@ function findScenicScoreX(grid: number[][], { x, y }: Coord, v: number) {
   return { leftScore, rightScore };
 }
 
+function getLeftRight(grid: number[][], { x, y }: Coord) {
+  const left = grid[y].slice(0, x).toReversed();
+  const right = grid[y].slice(x + 1, grid[0].length);
+  return { left, right };
+}
+
 function findScenicScoreY(grid: number[][], { x, y }: Coord, v: number) {
-  const col = grid.map((col) => col[x]);
-  const top = col.slice(0, y).toReversed();
-  const bottom = col.slice(y + 1, col.length);
+  const { top, bottom } = getTopBottom(grid, { x, y });
   let topScore = 0;
 
   for (const yVal of top) {
