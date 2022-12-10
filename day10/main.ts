@@ -16,6 +16,45 @@ type Signal = {
   val: number;
 };
 
+async function main() {
+  const input = await Deno.readTextFile("./day10/input.txt");
+  // part 1
+  const signals = gatherSignals(parse(input));
+  const wantCycles = new Set([20, 60, 100, 140, 180, 220]);
+  const signalVals = signals
+    .filter((s) => wantCycles.has(s.idx))
+    .reduce((acc, cur) => acc + cur.idx * cur.val, 0);
+
+  console.log(signalVals);
+
+  // part 2
+  const spritePositions = signals.map(
+    (s) => new Set([s.val - 1, s.val, s.val + 1])
+  );
+
+  const pixelRows = [
+    [0, 40],
+    [40, 80],
+    [80, 120],
+    [120, 160],
+    [160, 200],
+    [200, 240],
+  ];
+
+  const screenRows = pixelRows
+    .map(([start, end]) =>
+      spritePositions
+        .slice(start, end)
+        .map((spritPos, i) => (spritPos.has(i) ? "#" : "."))
+        .join("")
+    )
+    .join("\n");
+
+  console.log(screenRows);
+}
+
+main();
+
 function parse(input: string): Array<Row> {
   const lines = input.split("\n");
   return lines.map((line) => {
@@ -61,36 +100,3 @@ function gatherSignals(rows: Array<Row>): Signal[] {
     }
   ).signals;
 }
-
-async function main() {
-  const input = await Deno.readTextFile("./day10/input.txt");
-  const signals = gatherSignals(parse(input));
-  console.log(signals);
-  const wantCycles = new Set([20, 60, 100, 140, 180, 220]);
-  const signalVals = signals
-    .filter((s) => wantCycles.has(s.idx))
-    .reduce((acc, cur) => acc + cur.idx * cur.val, 0);
-
-  console.log(signalVals);
-
-  // part 2
-  const spritePositions = signals.map(
-    (s) => new Set([s.val - 1, s.val, s.val + 1])
-  );
-  
-  console.log(spritePositions);
-  const pixelsR1 = spritePositions
-    .slice(0, 40)
-    .map((spritPos, i) => (spritPos.has(i) ? "#" : "."));
-  console.log(pixelsR1.join(""));
-
-  const pixelsR2 = spritePositions
-  .slice(40, 80)
-  .map((spritPos, i) => (spritPos.has(i) ? "#" : "."));
-console.log(pixelsR2.join(""));
-
-}
-
-
-
-main();
