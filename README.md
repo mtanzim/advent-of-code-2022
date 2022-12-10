@@ -7,3 +7,5 @@ To run a solution:
 ie:
 
 `deno run -A day2/main.ts`
+
+See [deno.json](./deno.json) for additional details and tasks.
