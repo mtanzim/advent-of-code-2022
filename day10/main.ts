@@ -19,17 +19,16 @@ function parse(input: string): Array<Row> {
 interface Accum {
   curIdx: number;
   curVal: number;
-  signals: Array<{
-    idx: number;
-    val: number;
-  }>;
+  signals: Signal[];
 }
 
-async function main() {
-  const input = await Deno.readTextFile("./day10/input.txt");
-  const rows = parse(input);
-  console.log(rows);
-  const signals = rows.reduce(
+type Signal = {
+  idx: number;
+  val: number;
+};
+
+function gatherSignals(rows: Array<Row>): Signal[] {
+  return rows.reduce(
     (acc: Accum, row: Row) => {
       if (row[0] === "addx") {
         const [_, val] = row;
@@ -49,6 +48,7 @@ async function main() {
         signals: acc.signals.concat([{ idx: acc.curIdx + 1, val: acc.curVal }]),
       };
     },
+    // initializer
     {
       curIdx: 1,
       curVal: 1,
@@ -59,10 +59,17 @@ async function main() {
         },
       ],
     }
-  );
+  ).signals;
+}
+
+async function main() {
+  const input = await Deno.readTextFile("./day10/input.txt");
+  const rows = parse(input);
+  console.log(rows);
+  const signals = gatherSignals(rows);
   console.log(signals);
   const wantCycles = new Set([20, 60, 100, 140, 180, 220]);
-  const signalVals = signals.signals
+  const signalVals = signals
     .filter((s) => wantCycles.has(s.idx))
     .reduce((acc, cur) => acc + cur.idx * cur.val, 0);
 
