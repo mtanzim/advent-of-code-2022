@@ -5,17 +5,6 @@ type Add = [Inst, number];
 type NoOp = ["noop"];
 type Row = Add | NoOp;
 
-function parse(input: string): Array<Row> {
-  const lines = input.split("\n");
-  return lines.map((line) => {
-    const [inst, val] = line.split(" ");
-    if (inst === "addx") {
-      return [inst, Number(val)] as Add;
-    }
-    return [inst] as NoOp;
-  });
-}
-
 interface Accum {
   curIdx: number;
   curVal: number;
@@ -26,6 +15,17 @@ type Signal = {
   idx: number;
   val: number;
 };
+
+function parse(input: string): Array<Row> {
+  const lines = input.split("\n");
+  return lines.map((line) => {
+    const [inst, val] = line.split(" ");
+    if (inst === "addx") {
+      return [inst, Number(val)] as Add;
+    }
+    return [inst] as NoOp;
+  });
+}
 
 function gatherSignals(rows: Array<Row>): Signal[] {
   return rows.reduce(
@@ -64,10 +64,7 @@ function gatherSignals(rows: Array<Row>): Signal[] {
 
 async function main() {
   const input = await Deno.readTextFile("./day10/input.txt");
-  const rows = parse(input);
-  console.log(rows);
-  const signals = gatherSignals(rows);
-  console.log(signals);
+  const signals = gatherSignals(parse(input));
   const wantCycles = new Set([20, 60, 100, 140, 180, 220]);
   const signalVals = signals
     .filter((s) => wantCycles.has(s.idx))
