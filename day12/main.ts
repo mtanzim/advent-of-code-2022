@@ -119,7 +119,6 @@ async function main() {
   const source: Coord = findCoordOfVal(START_VAL, heightGrid);
 
   // part a
-  bfs(heightGrid, source);
   const sink: Coord = findCoordOfVal(END_VAL, heightGrid);
   const distTo = bfs(heightGrid, source);
   const distance = distTo.get(coordToStr(sink));
