@@ -21,7 +21,7 @@ type Dimension = {
 const START_VAL = "S".charCodeAt(0);
 const END_VAL = "E".charCodeAt(0);
 
-function findStartOrEnd(val: number, heightGrid: number[][]): Coord {
+function findCoordOfVal(val: number, heightGrid: number[][]): Coord {
   const { height, width } = getDimensions(heightGrid);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -116,11 +116,11 @@ function getDimensions(heightGrid: number[][]): Dimension {
 async function main() {
   const input = await Deno.readTextFile("./day12/input.txt");
   const heightGrid = parse(input);
-  const source: Coord = findStartOrEnd(START_VAL, heightGrid);
+  const source: Coord = findCoordOfVal(START_VAL, heightGrid);
 
   // part a
   bfs(heightGrid, source);
-  const sink: Coord = findStartOrEnd(END_VAL, heightGrid);
+  const sink: Coord = findCoordOfVal(END_VAL, heightGrid);
   const distTo = bfs(heightGrid, source);
   const distance = distTo.get(coordToStr(sink));
   console.log(distance);
