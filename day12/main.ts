@@ -26,8 +26,8 @@ type Dimension = {
   height: number;
 };
 
-const START = "S".charCodeAt(0);
-const END = "E".charCodeAt(0);
+const START_VAL = "S".charCodeAt(0);
+const END_VAL = "E".charCodeAt(0);
 
 function findStartOrEnd(val: number, heightGrid: number[][]): Coord {
   const { height, width } = getDimensions(heightGrid);
@@ -40,6 +40,19 @@ function findStartOrEnd(val: number, heightGrid: number[][]): Coord {
   }
   // invalid case
   return { x: -1, y: -1 };
+}
+
+function findCoordsOfVal(vals: Set<number>, heightGrid: number[][]): Coord[] {
+  const { height, width } = getDimensions(heightGrid);
+  const coords: Coord[] = [];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (vals.has(heightGrid[y][x])) {
+        coords.push({ x, y });
+      }
+    }
+  }
+  return coords;
 }
 
 function bfs(heightGrid: number[][], start: Coord) {
@@ -57,10 +70,10 @@ function bfs(heightGrid: number[][], start: Coord) {
     const { x, y } = vertex;
     let curHeightVal = heightGrid[y][x];
 
-    if (curHeightVal === START) {
+    if (curHeightVal === START_VAL) {
       curHeightVal = "a".charCodeAt(0);
     }
-    if (curHeightVal === END) {
+    if (curHeightVal === END_VAL) {
       return distTo;
     }
 
@@ -75,7 +88,7 @@ function bfs(heightGrid: number[][], start: Coord) {
     [left, right].forEach((c) => {
       if (c.x >= 0 && c.x < width && !marked.has(coordToStr(c))) {
         let neighborHeightVal = heightGrid[c.y][c.x];
-        if (neighborHeightVal === END) {
+        if (neighborHeightVal === END_VAL) {
           neighborHeightVal = "z".charCodeAt(0);
         }
         if (neighborHeightVal - curHeightVal <= 1) {
@@ -87,7 +100,7 @@ function bfs(heightGrid: number[][], start: Coord) {
     [top, bottom].forEach((c) => {
       if (c.y >= 0 && c.y < height && !marked.has(coordToStr(c))) {
         let neighborHeightVal = heightGrid[c.y][c.x];
-        if (neighborHeightVal === END) {
+        if (neighborHeightVal === END_VAL) {
           neighborHeightVal = "z".charCodeAt(0);
         }
         if (neighborHeightVal - curHeightVal <= 1) {
@@ -97,13 +110,6 @@ function bfs(heightGrid: number[][], start: Coord) {
     });
 
     for (const n of neighbors) {
-      // console.log({
-      //   currentPos: { x, y },
-      //   neighborPos: { x: n.x, y: n.y },
-      //   curChar: String.fromCharCode(curHeightVal),
-      //   neighborChar: String.fromCharCode(heightGrid[n.y][n.x]),
-      // });
-
       queue.push(n);
       marked.add(coordToStr(n));
       edgeTo.set(coordToStr(n), coordToStr(vertex));
@@ -123,31 +129,34 @@ function getDimensions(heightGrid: number[][]): Dimension {
 async function main() {
   const input = await Deno.readTextFile("./day12/input.txt");
   const heightGrid = parse(input);
-  const source: Coord = findStartOrEnd(START, heightGrid);
+  const source: Coord = findStartOrEnd(START_VAL, heightGrid);
+
+  // part a
   bfs(heightGrid, source);
-  const sink: Coord = findStartOrEnd(END, heightGrid);
+  const sink: Coord = findStartOrEnd(END_VAL, heightGrid);
   const distTo = bfs(heightGrid, source);
   const distance = distTo.get(coordToStr(sink));
-
-  // part 1
-  // console.log(input);
-  // console.log(heightGrid);
-  // console.log(source);
-  // console.log(sink);
-  // console.log(distTo);
   console.log(distance);
 
-  // let numSteps = 0;
-  // let curCoord = sink;
-  // while (coordToStr(curCoord) !== coordToStr(source)) {
-  //   numSteps++;
-  //   const next = edgeTo.get(coordToStr(curCoord));
-  //   if (!next) {
-  //     throw new Error("done goofed up!");
-  //   }
-  //   curCoord = strToCoord(next);
-  // }
-  // console.log(numSteps);
+  // part b
+  const possibleSources = findCoordsOfVal(
+    new Set(["S".charCodeAt(0), "a".charCodeAt(0)]),
+    heightGrid
+  );
+
+  const minDistance = possibleSources.reduce((acc: number, cur) => {
+    const distTo = bfs(heightGrid, cur);
+    const distance = distTo.get(coordToStr(sink));
+    // has no path to sink
+    if (!distance) {
+      return acc;
+    }
+    if (distance < acc) {
+      return distance;
+    }
+    return acc;
+  }, Number.POSITIVE_INFINITY);
+  console.log(minDistance);
 }
 
 main();
