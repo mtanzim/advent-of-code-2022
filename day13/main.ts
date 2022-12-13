@@ -13,10 +13,18 @@ function isArray(v: any): boolean {
 
 // is in order?
 function checkPair(left: Entry, right: Entry): boolean {
+  console.log({ left, right });
+
   if (!isArray(left) && !isArray(right)) {
     return left < right;
   }
   if (isArray(left) && isArray(right)) {
+    if (
+      (left as Array<number>).length === 0 &&
+      (right as Array<number>).length === 0
+    ) {
+      return false;
+    }
     if ((left as Array<number>).length === 0) {
       return true;
     }
@@ -25,13 +33,27 @@ function checkPair(left: Entry, right: Entry): boolean {
     }
     const [headLeft, ...tailLeft] = left as Array<number>;
     const [headRight, ...tailRight] = right as Array<number>;
-    return checkPair(headLeft, headRight) && checkPair(tailLeft, tailRight);
+    return checkPair(headLeft, headRight) || checkPair(tailLeft, tailRight);
   }
-  return false;
+  if (!isArray(left) && isArray(right)) {
+    return checkPair([left as number], right);
+  }
+  if (isArray(left) && !isArray(right)) {
+    return checkPair(left, [right as number]);
+  }
+  console.log({ left, right });
+  throw new Error("missed a branch!");
 }
 async function main() {
   const pairs = parse(await Deno.readTextFile("./day13/input.txt"));
   console.log(pairs);
+  const isOrdered = pairs
+    // .slice(1, 2)
+    .reduce(
+      (acc, p, i) => (checkPair(p[0], p[1]) ? acc.concat(i + 1) : acc),
+      [] as number[]
+    );
+  console.log(isOrdered);
 }
 
 main();
