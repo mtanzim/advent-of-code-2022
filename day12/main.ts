@@ -45,8 +45,9 @@ function bfs(heightGrid: number[][], start: Coord) {
     }
 
     const { x, y } = vertex;
-    const curHeightVal =
-      heightGrid[y][x] === START_VAL ? "a".charCodeAt(0) : heightGrid[y][x];
+    const curHeightVal = heightGrid[y][x] === START_VAL
+      ? "a".charCodeAt(0)
+      : heightGrid[y][x];
 
     if (curHeightVal === END_VAL) {
       return distTo;
@@ -74,7 +75,7 @@ function bfs(heightGrid: number[][], start: Coord) {
           c.y >= 0 &&
           c.y < height &&
           !marked.has(coordToStr(c)) &&
-          getNeighborVal(c) - curHeightVal <= 1
+          getNeighborVal(c) - curHeightVal <= 1,
       )
       .forEach((n) => {
         queue.push(n);
@@ -104,7 +105,7 @@ async function main() {
   // part b
   const minDistance = findCoordsOfVal(
     new Set(["S".charCodeAt(0), "a".charCodeAt(0)]),
-    heightGrid
+    heightGrid,
   ).reduce((acc: number, cur) => {
     const distTo = bfs(heightGrid, cur);
     const distance = distTo.get(coordToStr(sink));

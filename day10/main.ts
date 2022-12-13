@@ -29,7 +29,7 @@ async function main() {
 
   // part 2
   const spritePositions = signals.map(
-    (s) => new Set([s.val - 1, s.val, s.val + 1])
+    (s) => new Set([s.val - 1, s.val, s.val + 1]),
   );
 
   const pixelRows = [
@@ -97,6 +97,6 @@ function gatherSignals(rows: Array<Row>): Signal[] {
           val: 1,
         },
       ],
-    }
+    },
   ).signals;
 }

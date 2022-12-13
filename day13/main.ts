@@ -59,7 +59,7 @@ async function main() {
   const orderedIdxSum = pairs
     .reduce(
       (acc, p, i) => (checkPair(p[0], p[1]).result ? acc.concat(i + 1) : acc),
-      [] as number[]
+      [] as number[],
     )
     .reduce((acc, cur) => acc + cur, 0);
   console.log(orderedIdxSum);
