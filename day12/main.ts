@@ -13,14 +13,6 @@ function coordToStr(c: Coord): string {
   return `${c.x}|${c.y}`;
 }
 
-function strToCoord(s: string): Coord {
-  const [x, y] = s.split("|");
-  return {
-    x: Number(x),
-    y: Number(y),
-  };
-}
-
 type Dimension = {
   width: number;
   height: number;
@@ -56,16 +48,14 @@ function findCoordsOfVal(vals: Set<number>, heightGrid: number[][]): Coord[] {
 }
 
 function bfs(heightGrid: number[][], start: Coord) {
-  let queue: Coord[] = [start];
+  const queue: Coord[] = [start];
   const marked: Set<string> = new Set([coordToStr(start)]);
-  // key: to, value: from
-  const edgeTo: Map<string, string> = new Map();
   const distTo: Map<string, number> = new Map([[coordToStr(start), 0]]);
   while (queue.length > 0) {
     const vertex = queue.shift();
 
     if (!vertex) {
-      throw new Error("weird");
+      throw new Error("bruh I just checked your length");
     }
     const { x, y } = vertex;
     let curHeightVal = heightGrid[y][x];
@@ -84,26 +74,24 @@ function bfs(heightGrid: number[][], start: Coord) {
     const top: Coord = { x, y: y - 1 };
     const bottom: Coord = { x, y: y + 1 };
 
-    // gather neighbors
-    [left, right].forEach((c) => {
-      if (c.x >= 0 && c.x < width && !marked.has(coordToStr(c))) {
-        let neighborHeightVal = heightGrid[c.y][c.x];
-        if (neighborHeightVal === END_VAL) {
-          neighborHeightVal = "z".charCodeAt(0);
-        }
-        if (neighborHeightVal - curHeightVal <= 1) {
-          neighbors.push({ x: c.x, y: c.y });
-        }
+    const getNeighborVal = (c: Coord): number => {
+      const neighborHeightVal = heightGrid[c.y][c.x];
+      if (neighborHeightVal === END_VAL) {
+        return "z".charCodeAt(0);
       }
-    });
+      return neighborHeightVal;
+    };
 
-    [top, bottom].forEach((c) => {
-      if (c.y >= 0 && c.y < height && !marked.has(coordToStr(c))) {
-        let neighborHeightVal = heightGrid[c.y][c.x];
-        if (neighborHeightVal === END_VAL) {
-          neighborHeightVal = "z".charCodeAt(0);
-        }
-        if (neighborHeightVal - curHeightVal <= 1) {
+    // gather neighbors
+    [left, right, top, bottom].forEach((c) => {
+      if (
+        c.x >= 0 &&
+        c.x < width &&
+        c.y >= 0 &&
+        c.y < height &&
+        !marked.has(coordToStr(c))
+      ) {
+        if (getNeighborVal(c) - curHeightVal <= 1) {
           neighbors.push({ x: c.x, y: c.y });
         }
       }
@@ -112,7 +100,6 @@ function bfs(heightGrid: number[][], start: Coord) {
     for (const n of neighbors) {
       queue.push(n);
       marked.add(coordToStr(n));
-      edgeTo.set(coordToStr(n), coordToStr(vertex));
       distTo.set(coordToStr(n), (distTo.get(coordToStr(vertex)) || 0) + 1);
     }
   }
