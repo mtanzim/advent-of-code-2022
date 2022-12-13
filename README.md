@@ -1,4 +1,4 @@
-# [advent-of-`c`ode-2022](https://adventofcode.com/2022)
+# [advent-of-code-2022](https://adventofcode.com/2022)
 
 To run a solution:
 
