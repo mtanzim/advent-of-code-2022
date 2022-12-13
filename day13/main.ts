@@ -56,18 +56,18 @@ function checkPair(left: Entry, right: Entry): Result {
 }
 async function main() {
   const pairs = parse(await Deno.readTextFile("./day13/input.txt"));
-  const isOrdered = pairs
+  const orderedIdxSum = pairs
     .reduce(
       (acc, p, i) => (checkPair(p[0], p[1]).result ? acc.concat(i + 1) : acc),
       [] as number[]
     )
     .reduce((acc, cur) => acc + cur, 0);
-  console.log(isOrdered);
+  console.log(orderedIdxSum);
 
   // part b
   const decoder1: Entry = [[2]];
   const decoder2: Entry = [[6]];
-  const packets = pairs
+  const decoderKey = pairs
     .flat()
     .concat([decoder1, decoder2])
     .toSorted((a, b) => (checkPair(a, b).result ? -1 : 1))
@@ -81,7 +81,7 @@ async function main() {
       return acc;
     }, [] as number[])
     .reduce((acc, cur) => acc * cur, 1);
-  console.log(packets);
+  console.log(decoderKey);
 }
 
 main();
