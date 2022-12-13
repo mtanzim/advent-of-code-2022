@@ -1,4 +1,4 @@
-type Entry = Array<number> | number;
+type Entry = Array<number> | number | Array<Entry>;
 type Pair = [Entry, Entry];
 
 function parse(input: string): Array<Pair> {
@@ -7,19 +7,17 @@ function parse(input: string): Array<Pair> {
     .map((pair) => pair.split("\n").map((c) => JSON.parse(c))) as Array<Pair>;
 }
 
-function isArray(v: any): boolean {
+function isArray(v: unknown): boolean {
   return Array.isArray(v);
 }
 
 interface Result {
+  // is in order?
   result: boolean;
   shouldContinue: boolean;
 }
 
-// is in order?
 function checkPair(left: Entry, right: Entry): Result {
-  console.log({ left, right });
-
   if (!isArray(left) && !isArray(right)) {
     if (left === right) {
       return { result: false, shouldContinue: true };
@@ -58,14 +56,32 @@ function checkPair(left: Entry, right: Entry): Result {
 }
 async function main() {
   const pairs = parse(await Deno.readTextFile("./day13/input.txt"));
-  console.log(pairs);
   const isOrdered = pairs
-    // .slice(1, 2)
     .reduce(
       (acc, p, i) => (checkPair(p[0], p[1]).result ? acc.concat(i + 1) : acc),
       [] as number[]
-    ).reduce((acc, cur) => acc + cur, 0)
+    )
+    .reduce((acc, cur) => acc + cur, 0);
   console.log(isOrdered);
+
+  // part b
+  const decoder1: Entry = [[2]];
+  const decoder2: Entry = [[6]];
+  const packets = pairs
+    .flat()
+    .concat([decoder1, decoder2])
+    .toSorted((a, b) => (checkPair(a, b).result ? -1 : 1))
+    .reduce((acc: number[], packet, idx) => {
+      if (
+        JSON.stringify(packet) === JSON.stringify(decoder1) ||
+        JSON.stringify(packet) === JSON.stringify(decoder2)
+      ) {
+        return acc.concat(idx + 1);
+      }
+      return acc;
+    }, [] as number[])
+    .reduce((acc, cur) => acc * cur, 1);
+  console.log(packets);
 }
 
 main();
