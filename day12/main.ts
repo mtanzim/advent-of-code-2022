@@ -47,18 +47,22 @@ function bfs(heightGrid: number[][], start: Coord) {
   const marked: Set<string> = new Set([coordToStr(start)]);
   // key: to, value: from
   const edgeTo: Map<string, string> = new Map();
+  const distTo: Map<string, number> = new Map([[coordToStr(start), 0]]);
   while (queue.length > 0) {
     const vertex = queue.shift();
 
     if (!vertex) {
       throw new Error("weird");
     }
-
-    // queue = queue.slice(1, queue.length);
     const { x, y } = vertex;
-    const curHeightVal = heightGrid[y][x];
+    let curHeightVal = heightGrid[y][x];
 
-    // early short circuit
+    if (curHeightVal === START) {
+      curHeightVal = "a".charCodeAt(0);
+    }
+    if (curHeightVal === END) {
+      return distTo;
+    }
 
     const { width, height } = getDimensions(heightGrid);
     const neighbors: Array<Coord> = [];
@@ -70,7 +74,10 @@ function bfs(heightGrid: number[][], start: Coord) {
     // gather neighbors
     [left, right].forEach((c) => {
       if (c.x >= 0 && c.x < width && !marked.has(coordToStr(c))) {
-        const neighborHeightVal = heightGrid[c.y][c.x];
+        let neighborHeightVal = heightGrid[c.y][c.x];
+        if (neighborHeightVal === END) {
+          neighborHeightVal = "z".charCodeAt(0);
+        }
         if (neighborHeightVal - curHeightVal <= 1) {
           neighbors.push({ x: c.x, y: c.y });
         }
@@ -79,29 +86,32 @@ function bfs(heightGrid: number[][], start: Coord) {
 
     [top, bottom].forEach((c) => {
       if (c.y >= 0 && c.y < height && !marked.has(coordToStr(c))) {
-        const neighborHeightVal = heightGrid[c.y][c.x];
-        if (curHeightVal === START || neighborHeightVal === END) {
-          neighbors.push({ x: c.x, y: c.y });
-        } else if (neighborHeightVal - curHeightVal <= 1) {
+        let neighborHeightVal = heightGrid[c.y][c.x];
+        if (neighborHeightVal === END) {
+          neighborHeightVal = "z".charCodeAt(0);
+        }
+        if (neighborHeightVal - curHeightVal <= 1) {
           neighbors.push({ x: c.x, y: c.y });
         }
       }
     });
 
-    const foundSink = neighbors.some((c) => heightGrid[c.y][c.x] === END);
-    if (foundSink) {
-      break;
-    }
-
     for (const n of neighbors) {
+      // console.log({
+      //   currentPos: { x, y },
+      //   neighborPos: { x: n.x, y: n.y },
+      //   curChar: String.fromCharCode(curHeightVal),
+      //   neighborChar: String.fromCharCode(heightGrid[n.y][n.x]),
+      // });
+
       queue.push(n);
       marked.add(coordToStr(n));
       edgeTo.set(coordToStr(n), coordToStr(vertex));
+      distTo.set(coordToStr(n), (distTo.get(coordToStr(vertex)) || 0) + 1);
     }
   }
 
-  console.log({ steps: steps - 1 });
-  return edgeTo;
+  return distTo;
 }
 
 function getDimensions(heightGrid: number[][]): Dimension {
@@ -115,27 +125,29 @@ async function main() {
   const heightGrid = parse(input);
   const source: Coord = findStartOrEnd(START, heightGrid);
   bfs(heightGrid, source);
-  // const sink: Coord = findStartOrEnd(END, heightGrid);
-  // const edgeTo = bfs(heightGrid, source);
+  const sink: Coord = findStartOrEnd(END, heightGrid);
+  const distTo = bfs(heightGrid, source);
+  const distance = distTo.get(coordToStr(sink));
 
   // part 1
-  console.log(input);
-  console.log(heightGrid);
-  console.log(source);
-  console.log(sink);
-  console.log(edgeTo);
+  // console.log(input);
+  // console.log(heightGrid);
+  // console.log(source);
+  // console.log(sink);
+  // console.log(distTo);
+  console.log(distance);
 
-  let numSteps = 0;
-  let curCoord = sink;
-  while (coordToStr(curCoord) !== coordToStr(source)) {
-    numSteps++;
-    const next = edgeTo.get(coordToStr(curCoord));
-    if (!next) {
-      throw new Error("done goofed up!");
-    }
-    curCoord = strToCoord(next);
-  }
-  console.log(numSteps);
+  // let numSteps = 0;
+  // let curCoord = sink;
+  // while (coordToStr(curCoord) !== coordToStr(source)) {
+  //   numSteps++;
+  //   const next = edgeTo.get(coordToStr(curCoord));
+  //   if (!next) {
+  //     throw new Error("done goofed up!");
+  //   }
+  //   curCoord = strToCoord(next);
+  // }
+  // console.log(numSteps);
 }
 
 main();
