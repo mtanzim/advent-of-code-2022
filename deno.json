@@ -3,6 +3,7 @@
     "day8": "deno run --allow-read day8/main.ts",
     "day10": "deno run --allow-read day10/main.ts",
     "day12": "deno run --allow-read day12/main.ts",
-    "day13": "deno run --allow-read day13/main.ts"
+    "day13": "deno run --allow-read day13/main.ts",
+    "day14": "deno run --allow-read day14/main.ts"
   }
 }
