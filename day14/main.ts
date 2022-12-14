@@ -22,6 +22,39 @@ function parse(input: string): Coord[][] {
   return sandPaths;
 }
 
+type GameCoodRange = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+function initGameBoard({
+  minX,
+  maxX,
+  minY,
+  maxY,
+}: GameCoodRange): BoardElem[][] {
+  const startBoard: BoardElem[][] = [];
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
+      if (!startBoard[y]) {
+        startBoard[y] = [];
+      }
+      if (x === SOURCE_COORD.x && y === SOURCE_COORD.y) {
+        startBoard[y].push(BoardElem.SOURCE);
+      } else {
+        startBoard[y].push(BoardElem.AIR);
+      }
+    }
+  }
+  return startBoard;
+}
+
+function boardToStr(board: BoardElem[][]): string {
+  return board.map((r) => r.join("")).join("\n");
+}
+
 async function main() {
   const paths = parse(await Deno.readTextFile("./day14/input.txt"));
   const flatX = paths.flatMap((p) => p.map((c) => c.x)).concat(SOURCE_COORD.x);
@@ -44,6 +77,8 @@ async function main() {
   );
 
   console.log({ minX, maxX, minY, maxY });
+  const start = initGameBoard({ minX, maxX, minY, maxY });
+  console.log(boardToStr(start));
 }
 
 main();
