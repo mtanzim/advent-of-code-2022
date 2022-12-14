@@ -127,25 +127,26 @@ function boardToStr(board: BoardElem[][]): string {
   return board.map((r) => r.join("")).join("\n");
 }
 
-function traverseSand(
-  board: GameBoard,
-  curPos: Coord,
-  gameCoordRange: GameCoodRange
-): GameBoard {
-  const normalizeCoord = normalizer(gameCoordRange);
+function traverseSand(board: GameBoard, curPos: Coord): GameBoard {
+  // const normalizeCoord = normalizer(gameCoordRange);
 
-  const bottom = normalizeCoord({ x: curPos.x, y: curPos.y + 1 });
-  const bottomLeft = normalizeCoord({ x: curPos.x - 1, y: curPos.y + 1 });
-  const bottomRight = normalizeCoord({ x: curPos.x + 1, y: curPos.y + 1 });
+  // const bottom = normalizeCoord({ x: curPos.x, y: curPos.y + 1 });
+  // const bottomLeft = normalizeCoord({ x: curPos.x - 1, y: curPos.y + 1 });
+  // const bottomRight = normalizeCoord({ x: curPos.x + 1, y: curPos.y + 1 });
+
+  const bottom = { x: curPos.x, y: curPos.y + 1 };
+  const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
+  const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
+
   // try possible paths in order
   if (board[bottom.y][bottom.x] === BoardElem.AIR) {
-    return traverseSand(board, bottom, gameCoordRange);
+    return traverseSand(board, bottom);
   }
   if (board[bottomLeft.y][bottomLeft.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomLeft, gameCoordRange);
+    return traverseSand(board, bottomLeft);
   }
   if (board[bottomRight.y][bottomRight.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomLeft, gameCoordRange);
+    return traverseSand(board, bottomLeft);
   }
   // paths blocked, return game board with sand placed
   const clonedBoard = JSON.parse(JSON.stringify(board));
@@ -168,8 +169,7 @@ async function main() {
   // console.log(boardToStr(boardWithRocks));
   const singleSandPlaced = traverseSand(
     boardWithRocks,
-    SOURCE_COORD,
-    gameCoordRange
+    normalizer(gameCoordRange)(SOURCE_COORD)
   );
   console.log(boardToStr(singleSandPlaced));
 }
