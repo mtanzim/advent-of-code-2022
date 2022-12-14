@@ -72,12 +72,14 @@ function initGameBoard({ minX, maxX, minY, maxY }: GameCoodRange): GameBoard {
   return startBoard;
 }
 
-function getNormalizedCoord(c: Coord, gameCoordRange: GameCoodRange): Coord {
-  return {
-    x: c.x - gameCoordRange.minX,
-    y: c.y - gameCoordRange.minY,
+const normalizer =
+  (gameCoordRange: GameCoodRange) =>
+  (c: Coord): Coord => {
+    return {
+      x: c.x - gameCoordRange.minX,
+      y: c.y - gameCoordRange.minY,
+    };
   };
-}
 
 function placeRocks(
   path: SinglePath,
@@ -89,6 +91,7 @@ function placeRocks(
     coordPairs.push([path[i - 1], path[i]]);
   }
   const boardClone: GameBoard = JSON.parse(JSON.stringify(board));
+  const normalizeCoord = normalizer(gameCoordRange);
 
   // yikes, mutations, beware
   const updateWithCoordPair = (from: Coord, to: Coord) => {
@@ -99,10 +102,7 @@ function placeRocks(
       const yFrom = Math.min(fy, ty);
       const yTo = Math.max(fy, ty);
       for (let y = yFrom; y <= yTo; y++) {
-        const { x: curX, y: curY } = getNormalizedCoord(
-          { x: fx, y },
-          gameCoordRange
-        );
+        const { x: curX, y: curY } = normalizeCoord({ x: fx, y });
         boardClone[curY][curX] = BoardElem.ROCK;
       }
       return;
@@ -112,10 +112,7 @@ function placeRocks(
       const xFrom = Math.min(fx, tx);
       const xTo = Math.max(fx, tx);
       for (let x = xFrom; x <= xTo; x++) {
-        const { x: curX, y: curY } = getNormalizedCoord(
-          { x, y: fy },
-          gameCoordRange
-        );
+        const { x: curX, y: curY } = normalizeCoord({ x, y: fy });
         boardClone[curY][curX] = BoardElem.ROCK;
       }
       return;
@@ -135,9 +132,25 @@ function traverseSand(
   curPos: Coord,
   gameCoordRange: GameCoodRange
 ): GameBoard {
-  const bottom = { x: curPos.x, y: curPos.y + 1 };
-  const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
-  const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
+  const normalizeCoord = normalizer(gameCoordRange);
+
+  const bottom = normalizeCoord({ x: curPos.x, y: curPos.y + 1 });
+  const bottomLeft = normalizeCoord({ x: curPos.x - 1, y: curPos.y + 1 });
+  const bottomRight = normalizeCoord({ x: curPos.x + 1, y: curPos.y + 1 });
+  // try possible paths in order
+  if (board[bottom.y][bottom.x] === BoardElem.AIR) {
+    return traverseSand(board, bottom, gameCoordRange);
+  }
+  if (board[bottomLeft.y][bottomLeft.x] === BoardElem.AIR) {
+    return traverseSand(board, bottomLeft, gameCoordRange);
+  }
+  if (board[bottomRight.y][bottomRight.x] === BoardElem.AIR) {
+    return traverseSand(board, bottomLeft, gameCoordRange);
+  }
+  // paths blocked, return game board with sand placed
+  const clonedBoard = JSON.parse(JSON.stringify(board));
+  clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
+  return clonedBoard;
 }
 
 async function main() {
@@ -145,14 +158,20 @@ async function main() {
   const gameCoordRange = getStartCoord(paths);
   const start = initGameBoard(gameCoordRange);
   // console.log(boardToStr(start));
-  console.log(gameCoordRange);
+  // console.log(gameCoordRange);
 
   const boardWithRocks = paths.reduce(
     (acc, cur) => placeRocks(cur, acc, gameCoordRange),
     start
   );
 
-  console.log(boardToStr(boardWithRocks));
+  // console.log(boardToStr(boardWithRocks));
+  const singleSandPlaced = traverseSand(
+    boardWithRocks,
+    SOURCE_COORD,
+    gameCoordRange
+  );
+  console.log(boardToStr(singleSandPlaced));
 }
 
 main();
