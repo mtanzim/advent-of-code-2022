@@ -128,12 +128,6 @@ function boardToStr(board: BoardElem[][]): string {
 }
 
 function traverseSand(board: GameBoard, curPos: Coord): GameBoard {
-  // const normalizeCoord = normalizer(gameCoordRange);
-
-  // const bottom = normalizeCoord({ x: curPos.x, y: curPos.y + 1 });
-  // const bottomLeft = normalizeCoord({ x: curPos.x - 1, y: curPos.y + 1 });
-  // const bottomRight = normalizeCoord({ x: curPos.x + 1, y: curPos.y + 1 });
-
   const bottom = { x: curPos.x, y: curPos.y + 1 };
   const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
   const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
@@ -146,7 +140,7 @@ function traverseSand(board: GameBoard, curPos: Coord): GameBoard {
     return traverseSand(board, bottomLeft);
   }
   if (board[bottomRight.y][bottomRight.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomLeft);
+    return traverseSand(board, bottomRight);
   }
   // paths blocked, return game board with sand placed
   const clonedBoard = JSON.parse(JSON.stringify(board));
@@ -167,11 +161,15 @@ async function main() {
   );
 
   // console.log(boardToStr(boardWithRocks));
-  const singleSandPlaced = traverseSand(
-    boardWithRocks,
-    normalizer(gameCoordRange)(SOURCE_COORD)
+  const source = normalizer(gameCoordRange)(SOURCE_COORD);
+  // const singleSandPlaced = traverseSand(boardWithRocks, source);
+  // console.log(boardToStr(singleSandPlaced));
+  const numSands = 24;
+  const allSandsPlaced = [...Array(numSands).keys()].reduce(
+    (acc) => traverseSand(acc, source),
+    boardWithRocks
   );
-  console.log(boardToStr(singleSandPlaced));
+  console.log(boardToStr(allSandsPlaced));
 }
 
 main();
