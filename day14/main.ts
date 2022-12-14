@@ -72,7 +72,14 @@ function initGameBoard({ minX, maxX, minY, maxY }: GameCoodRange): GameBoard {
   return startBoard;
 }
 
-function updateWithSandPath(
+function getNormalizedCoord(c: Coord, gameCoordRange: GameCoodRange): Coord {
+  return {
+    x: c.x - gameCoordRange.minX,
+    y: c.y - gameCoordRange.minY,
+  };
+}
+
+function placeRocks(
   path: SinglePath,
   board: GameBoard,
   gameCoordRange: GameCoodRange
@@ -92,8 +99,10 @@ function updateWithSandPath(
       const yFrom = Math.min(fy, ty);
       const yTo = Math.max(fy, ty);
       for (let y = yFrom; y <= yTo; y++) {
-        const curY = y - gameCoordRange.minY;
-        const curX = fx - gameCoordRange.minX;
+        const { x: curX, y: curY } = getNormalizedCoord(
+          { x: fx, y },
+          gameCoordRange
+        );
         boardClone[curY][curX] = BoardElem.ROCK;
       }
       return;
@@ -103,8 +112,10 @@ function updateWithSandPath(
       const xFrom = Math.min(fx, tx);
       const xTo = Math.max(fx, tx);
       for (let x = xFrom; x <= xTo; x++) {
-        const curY = fy - gameCoordRange.minY;
-        const curX = x - gameCoordRange.minX;
+        const { x: curX, y: curY } = getNormalizedCoord(
+          { x, y: fy },
+          gameCoordRange
+        );
         boardClone[curY][curX] = BoardElem.ROCK;
       }
       return;
@@ -119,15 +130,25 @@ function boardToStr(board: BoardElem[][]): string {
   return board.map((r) => r.join("")).join("\n");
 }
 
+function traverseSand(
+  board: GameBoard,
+  curPos: Coord,
+  gameCoordRange: GameCoodRange
+): GameBoard {
+  const bottom = { x: curPos.x, y: curPos.y + 1 };
+  const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
+  const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
+}
+
 async function main() {
   const paths = parse(await Deno.readTextFile("./day14/input.txt"));
   const gameCoordRange = getStartCoord(paths);
   const start = initGameBoard(gameCoordRange);
-  console.log(boardToStr(start));
+  // console.log(boardToStr(start));
   console.log(gameCoordRange);
 
   const boardWithRocks = paths.reduce(
-    (acc, cur) => updateWithSandPath(cur, acc, gameCoordRange),
+    (acc, cur) => placeRocks(cur, acc, gameCoordRange),
     start
   );
 
