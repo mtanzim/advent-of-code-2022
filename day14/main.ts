@@ -29,6 +29,29 @@ type GameCoodRange = {
   maxY: number;
 };
 
+function getStartCoord(paths: Coord[][]): GameCoodRange {
+  const flatX = paths.flatMap((p) => p.map((c) => c.x)).concat(SOURCE_COORD.x);
+  const flatY = paths.flatMap((p) => p.map((c) => c.y)).concat(SOURCE_COORD.y);
+  const minX = flatX.reduce(
+    (acc, cur) => (acc < cur ? acc : cur),
+    Number.POSITIVE_INFINITY
+  );
+  const maxX = flatX.reduce(
+    (acc, cur) => (acc > cur ? acc : cur),
+    Number.NEGATIVE_INFINITY
+  );
+  const minY = flatY.reduce(
+    (acc, cur) => (acc < cur ? acc : cur),
+    Number.POSITIVE_INFINITY
+  );
+  const maxY = flatY.reduce(
+    (acc, cur) => (acc > cur ? acc : cur),
+    Number.NEGATIVE_INFINITY
+  );
+
+  return { minX, maxX, minY, maxY };
+}
+
 function initGameBoard({
   minX,
   maxX,
@@ -57,27 +80,7 @@ function boardToStr(board: BoardElem[][]): string {
 
 async function main() {
   const paths = parse(await Deno.readTextFile("./day14/input.txt"));
-  const flatX = paths.flatMap((p) => p.map((c) => c.x)).concat(SOURCE_COORD.x);
-  const flatY = paths.flatMap((p) => p.map((c) => c.y)).concat(SOURCE_COORD.y);
-  const minX = flatX.reduce(
-    (acc, cur) => (acc < cur ? acc : cur),
-    Number.POSITIVE_INFINITY
-  );
-  const maxX = flatX.reduce(
-    (acc, cur) => (acc > cur ? acc : cur),
-    Number.NEGATIVE_INFINITY
-  );
-  const minY = flatY.reduce(
-    (acc, cur) => (acc < cur ? acc : cur),
-    Number.POSITIVE_INFINITY
-  );
-  const maxY = flatY.reduce(
-    (acc, cur) => (acc > cur ? acc : cur),
-    Number.NEGATIVE_INFINITY
-  );
-
-  console.log({ minX, maxX, minY, maxY });
-  const start = initGameBoard({ minX, maxX, minY, maxY });
+  const start = initGameBoard(getStartCoord(paths));
   console.log(boardToStr(start));
 }
 
