@@ -130,35 +130,49 @@ function boardToStr(board: BoardElem[][]): string {
 
 function traverseSand(
   board: GameBoard,
-  curPos: Coord
-): { nextBoard: GameBoard; shouldContinue: boolean } {
+  curPos: Coord,
+  source: Coord
+): { nextBoard: GameBoard; shouldContinue: boolean; newSource: Coord } {
   const bottom = { x: curPos.x, y: curPos.y + 1 };
   const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
   const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
 
   // try possible paths in order
   if (board?.[bottom.y]?.[bottom.x] === BoardElem.AIR) {
-    return traverseSand(board, bottom);
+    return traverseSand(board, bottom, source);
   }
   if (board?.[bottomLeft.y]?.[bottomLeft.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomLeft);
+    return traverseSand(board, bottomLeft, source);
   }
   if (board?.[bottomRight.y]?.[bottomRight.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomRight);
+    return traverseSand(board, bottomRight, source);
   }
   // paths blocked, check if going into abyss
-  const clonedBoard = JSON.parse(JSON.stringify(board));
+  const clonedBoard: GameBoard = JSON.parse(JSON.stringify(board));
 
   const intoAbyss = [bottom, bottomLeft, bottomRight].some(
     (c) => !board?.[c.y]?.[c.x]
   );
   if (intoAbyss) {
-    clonedBoard[curPos.y][curPos.x] = BoardElem.LEAK;
-    return { nextBoard: clonedBoard, shouldContinue: false };
+    clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
+    clonedBoard.forEach((row) => row.unshift(BoardElem.AIR));
+    clonedBoard.forEach((row) => row.push(BoardElem.AIR));
+    clonedBoard[0][clonedBoard[0].length - 1] = BoardElem.ROCK;
+    clonedBoard[clonedBoard.length - 1][clonedBoard[0].length - 1] =
+      BoardElem.ROCK;
+    return {
+      nextBoard: clonedBoard,
+      shouldContinue: true,
+      newSource: { ...source, x: source.x + 1 },
+    };
   }
 
   clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
-  return { shouldContinue: true, nextBoard: clonedBoard };
+  return {
+    shouldContinue: !(curPos.x === source.x && curPos.y === source.y),
+    nextBoard: clonedBoard,
+    newSource: source,
+  };
 }
 
 async function main() {
@@ -173,16 +187,25 @@ async function main() {
     start
   );
 
+  boardWithRocks.push(
+    [...Array(boardWithRocks[0].length).keys()].map((_) => BoardElem.AIR)
+  );
+  boardWithRocks.push(
+    [...Array(boardWithRocks[0].length).keys()].map((_) => BoardElem.ROCK)
+  );
+
   console.log(boardToStr(boardWithRocks));
   const source = normalizer(gameCoordRange)(SOURCE_COORD);
 
   let curBoard = boardWithRocks;
   let shouldContinue = true;
   let numSands = 0;
+  let curSource = source;
   while (shouldContinue) {
-    const res = traverseSand(curBoard, source);
+    const res = traverseSand(curBoard, curSource, curSource);
     curBoard = res.nextBoard;
     shouldContinue = res.shouldContinue;
+    curSource = res.newSource;
     if (shouldContinue) {
       numSands++;
     }
