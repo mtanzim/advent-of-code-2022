@@ -131,7 +131,8 @@ function boardToStr(board: BoardElem[][]): string {
 function traverseSand(
   board: GameBoard,
   curPos: Coord,
-  source: Coord
+  source: Coord,
+  hasFloor = true
 ): { nextBoard: GameBoard; shouldContinue: boolean; newSource: Coord } {
   const bottom = { x: curPos.x, y: curPos.y + 1 };
   const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
@@ -139,13 +140,13 @@ function traverseSand(
 
   // try possible paths in order
   if (board?.[bottom.y]?.[bottom.x] === BoardElem.AIR) {
-    return traverseSand(board, bottom, source);
+    return traverseSand(board, bottom, source, hasFloor);
   }
   if (board?.[bottomLeft.y]?.[bottomLeft.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomLeft, source);
+    return traverseSand(board, bottomLeft, source, hasFloor);
   }
   if (board?.[bottomRight.y]?.[bottomRight.x] === BoardElem.AIR) {
-    return traverseSand(board, bottomRight, source);
+    return traverseSand(board, bottomRight, source, hasFloor);
   }
   // paths blocked, check if going into abyss
   const clonedBoard: GameBoard = JSON.parse(JSON.stringify(board));
@@ -153,7 +154,9 @@ function traverseSand(
   const intoAbyss = [bottom, bottomLeft, bottomRight].some(
     (c) => !board?.[c.y]?.[c.x]
   );
-  if (intoAbyss) {
+
+  // eww mutations
+  if (hasFloor && intoAbyss) {
     clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
     clonedBoard.forEach((row) => row.unshift(BoardElem.AIR));
     clonedBoard.forEach((row) => row.push(BoardElem.AIR));
@@ -163,6 +166,15 @@ function traverseSand(
     return {
       nextBoard: clonedBoard,
       shouldContinue: true,
+      newSource: { ...source, x: source.x + 1 },
+    };
+  }
+
+  if (!hasFloor && intoAbyss) {
+    clonedBoard[curPos.y][curPos.x] = BoardElem.LEAK;
+    return {
+      nextBoard: clonedBoard,
+      shouldContinue: false,
       newSource: { ...source, x: source.x + 1 },
     };
   }
@@ -178,40 +190,56 @@ function traverseSand(
 async function main() {
   const paths = parse(await Deno.readTextFile("./day14/input.txt"));
   const gameCoordRange = getStartCoord(paths);
+  const source = normalizer(gameCoordRange)(SOURCE_COORD);
   const start = initGameBoard(gameCoordRange);
-  // console.log(boardToStr(start));
-  console.log(gameCoordRange);
 
   const boardWithRocks = paths.reduce(
     (acc, cur) => placeRocks(cur, acc, gameCoordRange),
     start
   );
+  const partA = () => {
+    let curBoard = boardWithRocks;
+    let shouldContinue = true;
+    let numSands = 0;
+    let curSource = source;
+    while (shouldContinue) {
+      const res = traverseSand(curBoard, curSource, curSource, false);
+      curBoard = res.nextBoard;
+      shouldContinue = res.shouldContinue;
+      curSource = res.newSource;
+      if (shouldContinue) {
+        numSands++;
+      }
+    }
+    console.log(boardToStr(curBoard));
+    console.log(numSands);
+  };
+  partA();
 
-  boardWithRocks.push(
-    [...Array(boardWithRocks[0].length).keys()].map((_) => BoardElem.AIR)
-  );
-  boardWithRocks.push(
-    [...Array(boardWithRocks[0].length).keys()].map((_) => BoardElem.ROCK)
-  );
+  const boardWithFloor = JSON.parse(JSON.stringify(boardWithRocks));
+  const partB = () => {
+    boardWithFloor.push(
+      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.AIR)
+    );
+    boardWithFloor.push(
+      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.ROCK)
+    );
 
-  console.log(boardToStr(boardWithRocks));
-  const source = normalizer(gameCoordRange)(SOURCE_COORD);
-
-  let curBoard = boardWithRocks;
-  let shouldContinue = true;
-  let numSands = 0;
-  let curSource = source;
-  while (shouldContinue) {
-    const res = traverseSand(curBoard, curSource, curSource);
-    curBoard = res.nextBoard;
-    shouldContinue = res.shouldContinue;
-    curSource = res.newSource;
-    // if (shouldContinue) {
+    let curBoard = boardWithFloor;
+    let shouldContinue = true;
+    let numSands = 0;
+    let curSource = source;
+    while (shouldContinue) {
+      const res = traverseSand(curBoard, curSource, curSource);
+      curBoard = res.nextBoard;
+      shouldContinue = res.shouldContinue;
+      curSource = res.newSource;
       numSands++;
-    // }
-  }
-  console.log(boardToStr(curBoard));
-  console.log(numSands);
+    }
+    console.log(boardToStr(curBoard));
+    console.log(numSands);
+  };
+  partB();
 }
 
 main();
