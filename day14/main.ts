@@ -197,7 +197,7 @@ async function main() {
     (acc, cur) => placeRocks(cur, acc, gameCoordRange),
     start
   );
-  const partA = () => {
+  (function partA() {
     let curBoard = boardWithRocks;
     let shouldContinue = true;
     let numSands = 0;
@@ -213,11 +213,10 @@ async function main() {
     }
     console.log(boardToStr(curBoard));
     console.log(numSands);
-  };
-  partA();
+  })();
 
   const boardWithFloor = JSON.parse(JSON.stringify(boardWithRocks));
-  const partB = () => {
+  (function partB() {
     boardWithFloor.push(
       [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.AIR)
     );
@@ -238,8 +237,7 @@ async function main() {
     }
     console.log(boardToStr(curBoard));
     console.log(numSands);
-  };
-  partB();
+  })();
 }
 
 main();
