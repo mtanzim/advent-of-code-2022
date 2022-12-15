@@ -137,20 +137,20 @@ function traverseSand(
   const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
 
   // try possible paths in order
-  if (board[bottom.y][bottom.x] === BoardElem.AIR) {
+  if (board?.[bottom.y]?.[bottom.x] === BoardElem.AIR) {
     return traverseSand(board, bottom);
   }
-  if (board[bottomLeft.y][bottomLeft.x] === BoardElem.AIR) {
+  if (board?.[bottomLeft.y]?.[bottomLeft.x] === BoardElem.AIR) {
     return traverseSand(board, bottomLeft);
   }
-  if (board[bottomRight.y][bottomRight.x] === BoardElem.AIR) {
+  if (board?.[bottomRight.y]?.[bottomRight.x] === BoardElem.AIR) {
     return traverseSand(board, bottomRight);
   }
   // paths blocked, check if going into abyss
   const clonedBoard = JSON.parse(JSON.stringify(board));
 
   const intoAbyss = [bottom, bottomLeft, bottomRight].some(
-    (c) => !board[c.y][c.x]
+    (c) => !board?.[c.y]?.[c.x]
   );
   if (intoAbyss) {
     clonedBoard[curPos.y][curPos.x] = BoardElem.LEAK;
@@ -166,14 +166,14 @@ async function main() {
   const gameCoordRange = getStartCoord(paths);
   const start = initGameBoard(gameCoordRange);
   // console.log(boardToStr(start));
-  // console.log(gameCoordRange);
+  console.log(gameCoordRange);
 
   const boardWithRocks = paths.reduce(
     (acc, cur) => placeRocks(cur, acc, gameCoordRange),
     start
   );
 
-  // console.log(boardToStr(boardWithRocks));
+  console.log(boardToStr(boardWithRocks));
   const source = normalizer(gameCoordRange)(SOURCE_COORD);
 
   let curBoard = boardWithRocks;
