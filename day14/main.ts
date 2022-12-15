@@ -157,7 +157,7 @@ function traverseSand(
     clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
     clonedBoard.forEach((row) => row.unshift(BoardElem.AIR));
     clonedBoard.forEach((row) => row.push(BoardElem.AIR));
-    clonedBoard[0][clonedBoard[0].length - 1] = BoardElem.ROCK;
+    clonedBoard[clonedBoard.length - 1][0] = BoardElem.ROCK;
     clonedBoard[clonedBoard.length - 1][clonedBoard[0].length - 1] =
       BoardElem.ROCK;
     return {
@@ -206,9 +206,9 @@ async function main() {
     curBoard = res.nextBoard;
     shouldContinue = res.shouldContinue;
     curSource = res.newSource;
-    if (shouldContinue) {
+    // if (shouldContinue) {
       numSands++;
-    }
+    // }
   }
   console.log(boardToStr(curBoard));
   console.log(numSands);
