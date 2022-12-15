@@ -3,6 +3,7 @@ enum BoardElem {
   ROCK = "#",
   SOURCE = "+",
   SAND = "O",
+  LEAK = "~",
 }
 
 interface Coord {
@@ -127,7 +128,10 @@ function boardToStr(board: BoardElem[][]): string {
   return board.map((r) => r.join("")).join("\n");
 }
 
-function traverseSand(board: GameBoard, curPos: Coord): GameBoard {
+function traverseSand(
+  board: GameBoard,
+  curPos: Coord
+): { nextBoard: GameBoard; shouldContinue: boolean } {
   const bottom = { x: curPos.x, y: curPos.y + 1 };
   const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
   const bottomRight = { x: curPos.x + 1, y: curPos.y + 1 };
@@ -142,10 +146,19 @@ function traverseSand(board: GameBoard, curPos: Coord): GameBoard {
   if (board[bottomRight.y][bottomRight.x] === BoardElem.AIR) {
     return traverseSand(board, bottomRight);
   }
-  // paths blocked, return game board with sand placed
+  // paths blocked, check if going into abyss
   const clonedBoard = JSON.parse(JSON.stringify(board));
+
+  const intoAbyss = [bottom, bottomLeft, bottomRight].some(
+    (c) => !board[c.y][c.x]
+  );
+  if (intoAbyss) {
+    clonedBoard[curPos.y][curPos.x] = BoardElem.LEAK;
+    return { nextBoard: clonedBoard, shouldContinue: false };
+  }
+
   clonedBoard[curPos.y][curPos.x] = BoardElem.SAND;
-  return clonedBoard;
+  return { shouldContinue: true, nextBoard: clonedBoard };
 }
 
 async function main() {
@@ -162,14 +175,20 @@ async function main() {
 
   // console.log(boardToStr(boardWithRocks));
   const source = normalizer(gameCoordRange)(SOURCE_COORD);
-  // const singleSandPlaced = traverseSand(boardWithRocks, source);
-  // console.log(boardToStr(singleSandPlaced));
-  const numSands = 24;
-  const allSandsPlaced = [...Array(numSands).keys()].reduce(
-    (acc) => traverseSand(acc, source),
-    boardWithRocks
-  );
-  console.log(boardToStr(allSandsPlaced));
+
+  let curBoard = boardWithRocks;
+  let shouldContinue = true;
+  let numSands = 0;
+  while (shouldContinue) {
+    const res = traverseSand(curBoard, source);
+    curBoard = res.nextBoard;
+    shouldContinue = res.shouldContinue;
+    if (shouldContinue) {
+      numSands++;
+    }
+  }
+  console.log(boardToStr(curBoard));
+  console.log(numSands);
 }
 
 main();
