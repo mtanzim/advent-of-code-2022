@@ -229,6 +229,7 @@ async function main() {
     let numSands = 0;
     let curSource = source;
     while (shouldContinue) {
+      console.log(`Simulating sand ${numSands}`);
       const res = traverseSand(curBoard, curSource, curSource);
       curBoard = res.nextBoard;
       shouldContinue = res.shouldContinue;
