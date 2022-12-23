@@ -54,16 +54,35 @@ function parseStacks(input: string): CrateMap {
     }
   });
 
-  return new Map(stacks.map((s, idx) => [idx + 1, s]));
+  return new Map(stacks.map((s, idx) => [idx + 1, s.toReversed()]));
 }
 
 function parse(input: string): { moves: Move[]; crates: CrateMap } {
   return { moves: parseMoves(input), crates: parseStacks(input) };
 }
 
+function runMoves({
+  crates,
+  moves,
+}: {
+  moves: Move[];
+  crates: CrateMap;
+}): CrateMap {
+  const runningCrateMap = new Map(crates);
+  moves.forEach(({ from, to }) => {
+    const movingCrate = runningCrateMap.get(from)?.pop();
+    if (!movingCrate) {
+      throw new Error("unable to get crate");
+    }
+    runningCrateMap.get(to)?.push(movingCrate);
+  });
+  return new Map(runningCrateMap);
+}
+
 async function main() {
   const { crates, moves } = parse(await Deno.readTextFile("./day5/input.txt"));
-  console.log({ crates, moves });
+  const finalCrates = runMoves({ crates, moves });
+  console.log({ crates, moves, finalCrates });
 }
 
 main();
