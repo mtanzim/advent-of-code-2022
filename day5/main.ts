@@ -25,7 +25,7 @@ function parseMoves(input: string): Move[] {
     }, [] as Move[]);
 }
 
-function parseStacks(input: string): CrateMap {
+function parseStacks(input: string): { crates: CrateMap; numStacks: number } {
   const [stackInput] = input.split("\n\n");
   const stackLines = stackInput.split("\n");
   const numStacks = stackLines
@@ -54,11 +54,18 @@ function parseStacks(input: string): CrateMap {
     }
   });
 
-  return new Map(stacks.map((s, idx) => [idx + 1, s.toReversed()]));
+  return {
+    crates: new Map(stacks.map((s, idx) => [idx + 1, s.toReversed()])),
+    numStacks,
+  };
 }
 
-function parse(input: string): { moves: Move[]; crates: CrateMap } {
-  return { moves: parseMoves(input), crates: parseStacks(input) };
+function parse(input: string): {
+  moves: Move[];
+  crates: CrateMap;
+  numStacks: number;
+} {
+  return { moves: parseMoves(input), ...parseStacks(input) };
 }
 
 function runMoves({
@@ -80,9 +87,17 @@ function runMoves({
 }
 
 async function main() {
-  const { crates, moves } = parse(await Deno.readTextFile("./day5/input.txt"));
+  const { crates, moves, numStacks } = parse(
+    await Deno.readTextFile("./day5/input.txt")
+  );
   const finalCrates = runMoves({ crates, moves });
   console.log({ crates, moves, finalCrates });
+  const result = [...Array(numStacks)]
+    .map((_, idx) => idx + 1)
+    .map((i) => finalCrates.get(i)?.at(-1))
+    .join("");
+
+  console.log(result);
 }
 
 main();
