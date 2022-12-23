@@ -3,26 +3,41 @@ type Move = {
   to: number;
 };
 
+type MoveB = {
+  from: number;
+  to: number;
+  amount: number;
+};
 type Stack = string[];
 type CrateMap = Map<number, Stack>;
 
-function parseMoves(input: string): Move[] {
+function parseMoves(input: string): {
+  partAMoves: Move[];
+  partBMoves: MoveB[];
+} {
   const [_, movesInput] = input.split("\n\n");
   const moveLines = movesInput.split("\n");
-  return moveLines
-    .map((line) =>
-      line
-        .split(" ")
-        .filter((token) => Number.isInteger(Number(token)))
-        .map(Number)
-    )
-    .reduce((acc, cur) => {
-      const newMoves = [...Array(cur[0])].map((_) => ({
-        from: cur[1],
-        to: cur[2],
+  const unprocessedMoves = moveLines.map((line) =>
+    line
+      .split(" ")
+      .filter((token) => Number.isInteger(Number(token)))
+      .map(Number)
+  );
+
+  return {
+    partAMoves: unprocessedMoves.reduce((acc, [amount, from, to]) => {
+      const newMoves = [...Array(amount)].map((_) => ({
+        from,
+        to,
       }));
       return acc.concat(newMoves);
-    }, [] as Move[]);
+    }, [] as Move[]),
+    partBMoves: unprocessedMoves.map(([amount, from, to]) => ({
+      amount,
+      from,
+      to,
+    })),
+  };
 }
 
 function parseStacks(input: string): { crates: CrateMap; numStacks: number } {
@@ -60,12 +75,13 @@ function parseStacks(input: string): { crates: CrateMap; numStacks: number } {
   };
 }
 
-function parse(input: string): {
-  moves: Move[];
-  crates: CrateMap;
-  numStacks: number;
-} {
-  return { moves: parseMoves(input), ...parseStacks(input) };
+function parse(input: string) {
+  return { ...parseMoves(input), ...parseStacks(input) };
+}
+
+function deepCopyCrates(crates: CrateMap): CrateMap {
+  const arr = [...crates.entries()];
+  return new Map(arr.map(([k, v]) => [k, v.slice()]));
 }
 
 function runMoves({
@@ -75,7 +91,7 @@ function runMoves({
   moves: Move[];
   crates: CrateMap;
 }): CrateMap {
-  const runningCrateMap = new Map(crates);
+  const runningCrateMap = deepCopyCrates(crates);
   moves.forEach(({ from, to }) => {
     const movingCrate = runningCrateMap.get(from)?.pop();
     if (!movingCrate) {
@@ -83,21 +99,48 @@ function runMoves({
     }
     runningCrateMap.get(to)?.push(movingCrate);
   });
-  return new Map(runningCrateMap);
+  return deepCopyCrates(runningCrateMap);
+}
+
+function runMovesB({
+  crates,
+  moves,
+}: {
+  moves: MoveB[];
+  crates: CrateMap;
+}): CrateMap {
+  const runningCrateMap = deepCopyCrates(crates);
+  moves.forEach(({ from, to, amount }) => {
+    const curLen = runningCrateMap.get(from)?.length;
+    if (curLen === undefined) {
+      throw new Error("unable to run move");
+    }
+    const movingCrates = runningCrateMap
+      .get(from)
+      ?.splice(curLen - amount, amount);
+    runningCrateMap.get(to)?.push(...(movingCrates || []));
+  });
+  return deepCopyCrates(runningCrateMap);
+}
+
+function getResult(crates: CrateMap, numStacks: number) {
+  return [...Array(numStacks)]
+    .map((_, idx) => idx + 1)
+    .map((i) => crates.get(i)?.at(-1))
+    .join("");
 }
 
 async function main() {
-  const { crates, moves, numStacks } = parse(
+  const { crates, partAMoves, partBMoves, numStacks } = parse(
     await Deno.readTextFile("./day5/input.txt")
   );
-  const finalCrates = runMoves({ crates, moves });
-  console.log({ crates, moves, finalCrates });
-  const result = [...Array(numStacks)]
-    .map((_, idx) => idx + 1)
-    .map((i) => finalCrates.get(i)?.at(-1))
-    .join("");
-
-  console.log(result);
+  const finalCrates = runMoves({ crates, moves: partAMoves });
+  const finalCratesB = runMovesB({ crates, moves: partBMoves });
+  console.log(finalCrates);
+  console.log(getResult(finalCrates, numStacks));
+  console.log();
+  console.log(finalCratesB);
+  console.log(getResult(finalCratesB, numStacks));
 }
 
 main();
