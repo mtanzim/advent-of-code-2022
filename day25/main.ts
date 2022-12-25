@@ -2,11 +2,6 @@ function parse(input: string) {
   return input.split("\n");
 }
 
-type MultiplierAcuum = {
-  last: number;
-  multipliers: number[];
-};
-
 function decipherWeirdAssSnafuDigits(c: string): number {
   switch (c) {
     case "=":
@@ -25,14 +20,15 @@ function snafuToDecimal(snafu: string): number {
     .toReversed();
   const decipheredDigits = digits.map(decipherWeirdAssSnafuDigits);
   const values = decipheredDigits.map((v, i) => v * multipliers[i]);
-  const value = values.reduce((acc, cur) => acc + cur, 0);
-  console.log({ multipliers, digits, decipheredDigits, values, value });
+  return values.reduce((acc, cur) => acc + cur, 0);
 }
 
 async function main() {
   const lines = parse(await Deno.readTextFile("./day25/input.txt"));
-  // console.log(lines);
   snafuToDecimal(lines[0]);
+  const snafuValues = lines.map(snafuToDecimal);
+  const sum = snafuValues.reduce((acc, cur) => acc + cur, 0);
+  console.log(sum);
 }
 
 main();
