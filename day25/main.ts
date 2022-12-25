@@ -24,7 +24,7 @@ function snafuToDecimal(snafu: string): number {
   return values.reduce((acc, cur) => acc + cur, 0);
 }
 
-function decimalToSnafu(n: number): number {
+function decimalToSnafu(n: number): string {
   const findMultipliers = (cur: number, lst: number[]): number[] => {
     if (n / cur < 1) {
       return lst;
@@ -37,7 +37,7 @@ function decimalToSnafu(n: number): number {
     lst: number[],
     mlts: number[]
   ): number[] => {
-    if (v === 0) {
+    if (mlts.length === 0) {
       return lst;
     }
     const [mltHead, ...newMlt] = mlts;
@@ -46,7 +46,7 @@ function decimalToSnafu(n: number): number {
     return convertTo5base(newMod, lst.concat(newV), newMlt);
   };
 
-  const convertToSnafuDigits = (ns: number[]): string => {
+  const convertToSnafuDigits = (ns: number[]): number[] => {
     const allClean = ns.every((n) => n >= -2 && n <= 2);
     if (allClean) {
       return ns;
@@ -78,10 +78,35 @@ function decimalToSnafu(n: number): number {
 
   const multipliers = findMultipliers(1, []).toReversed();
   const base5Dec = convertTo5base(n, [], multipliers);
+
+  const checkN = base5Dec
+    .map((n, idx) => n * multipliers[idx])
+    .reduce((acc, cur) => acc + cur);
+
+  if (n !== checkN) {
+    throw new Error("error converting to snafu: base 5 stage");
+  }
+
   const base5WithCorrectDigits = convertToSnafuDigits(base5Dec);
+
+  const checkNWithNegativeNumber = base5WithCorrectDigits
+    .map((n, idx) => n * multipliers[idx])
+    .reduce((acc, cur) => acc + cur);
+
+  if (n !== checkNWithNegativeNumber) {
+    throw new Error("error converting to snafu: base 5 with negatives stage");
+  }
+
   const snafuChars = base5WithCorrectDigits.map(convertToSnafuChar).join("");
+
+  console.log({ multipliers, base5Dec, base5WithCorrectDigits, snafuChars });
+
   if (n !== snafuToDecimal(snafuChars)) {
-    throw new Error("error converting to snafu");
+    throw new Error(
+      `error converting to snafu, given: ${n}, got: ${snafuToDecimal(
+        snafuChars
+      )}`
+    );
   }
   return snafuChars;
 }
