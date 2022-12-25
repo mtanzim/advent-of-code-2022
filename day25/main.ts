@@ -117,7 +117,7 @@ async function main() {
   const snafuValues = lines.map(snafuToDecimal);
   const sum = snafuValues.reduce((acc, cur) => acc + cur, 0);
   console.log(sum);
-  console.log(decimalToSnafu(sum));
+  // console.log(decimalToSnafu(sum));
 }
 
 main();
