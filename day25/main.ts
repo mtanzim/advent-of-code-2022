@@ -46,10 +46,44 @@ function decimalToSnafu(n: number): number {
     return convertTo5base(newMod, lst.concat(newV), newMlt);
   };
 
+  const convertToSnafuDigits = (ns: number[]): string => {
+    const allClean = ns.every((n) => n >= -2 && n <= 2);
+    if (allClean) {
+      return ns;
+    }
+    const lastBadDigitIdx = ns.findLastIndex((n) => n === 3 || n === 4);
+    const lastBadDigitIdxPrev = lastBadDigitIdx - 1;
+    const lastBadDigit = ns.findLast((n) => n === 3 || n === 4);
+    const newNS = ns.slice();
+    newNS[lastBadDigitIdx] = lastBadDigit === 4 ? -1 : -2;
+    if (lastBadDigitIdxPrev < 0) {
+      newNS.unshift(1);
+    } else {
+      newNS[lastBadDigitIdxPrev]++;
+    }
+    return convertToSnafuDigits(newNS);
+  };
+
+  const convertToSnafuChar = (n: number): string => {
+    if (n >= 0 && n <= 2) {
+      return String(n);
+    } else if (n === -2) {
+      return "=";
+    } else if (n === -1) {
+      return "-";
+    } else {
+      throw new Error("unclean snafu digits!");
+    }
+  };
+
   const multipliers = findMultipliers(1, []).toReversed();
   const base5Dec = convertTo5base(n, [], multipliers);
-  console.log(multipliers);
-  console.log(base5Dec);
+  const base5WithCorrectDigits = convertToSnafuDigits(base5Dec);
+  const snafuChars = base5WithCorrectDigits.map(convertToSnafuChar).join("");
+  if (n !== snafuToDecimal(snafuChars)) {
+    throw new Error("error converting to snafu");
+  }
+  return snafuChars;
 }
 
 async function main() {
@@ -58,7 +92,7 @@ async function main() {
   const snafuValues = lines.map(snafuToDecimal);
   const sum = snafuValues.reduce((acc, cur) => acc + cur, 0);
   console.log(sum);
-  console.log(decimalToSnafu(2022));
+  console.log(decimalToSnafu(sum));
 }
 
 main();
