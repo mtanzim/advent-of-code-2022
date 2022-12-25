@@ -47,6 +47,7 @@ function decimalToSnafu(n: number): string {
   };
 
   const convertToSnafuDigits = (ns: number[]): number[] => {
+    console.log(ns);
     const allClean = ns.every((n) => n >= -2 && n <= 2);
     if (allClean) {
       return ns;
@@ -56,10 +57,12 @@ function decimalToSnafu(n: number): string {
     const lastBadDigit = ns.findLast((n) => n === 3 || n === 4);
     const newNS = ns.slice();
     newNS[lastBadDigitIdx] = lastBadDigit === 4 ? -1 : -2;
-    if (lastBadDigitIdxPrev < 0) {
+    if (lastBadDigitIdx === 0) {
       newNS.unshift(1);
-    } else {
+    } else if (lastBadDigitIdx > 1) {
       newNS[lastBadDigitIdxPrev]++;
+    } else {
+      return ns
     }
     return convertToSnafuDigits(newNS);
   };
@@ -72,7 +75,7 @@ function decimalToSnafu(n: number): string {
     } else if (n === -1) {
       return "-";
     } else {
-      throw new Error("unclean snafu digits!");
+      throw new Error(`unclean snafu digits!: ${n}` );
     }
   };
 
@@ -117,7 +120,7 @@ async function main() {
   const snafuValues = lines.map(snafuToDecimal);
   const sum = snafuValues.reduce((acc, cur) => acc + cur, 0);
   console.log(sum);
-  // console.log(decimalToSnafu(sum));
+  console.log(decimalToSnafu(sum));
 }
 
 main();
