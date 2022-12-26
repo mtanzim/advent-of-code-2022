@@ -132,7 +132,7 @@ function getResult(crates: CrateMap, numStacks: number) {
 
 async function main() {
   const { crates, partAMoves, partBMoves, numStacks } = parse(
-    await Deno.readTextFile("./day5/input.txt")
+    await Deno.readTextFile("./day5/input.txt"),
   );
   const finalCrates = runMoves({ crates, moves: partAMoves });
   const finalCratesB = runMovesB({ crates, moves: partBMoves });

@@ -38,19 +38,19 @@ function getStartCoord(paths: SinglePath[]): GameCoodRange {
   const flatY = paths.flatMap((p) => p.map((c) => c.y)).concat(SOURCE_COORD.y);
   const minX = flatX.reduce(
     (acc, cur) => (acc < cur ? acc : cur),
-    Number.POSITIVE_INFINITY
+    Number.POSITIVE_INFINITY,
   );
   const maxX = flatX.reduce(
     (acc, cur) => (acc > cur ? acc : cur),
-    Number.NEGATIVE_INFINITY
+    Number.NEGATIVE_INFINITY,
   );
   const minY = flatY.reduce(
     (acc, cur) => (acc < cur ? acc : cur),
-    Number.POSITIVE_INFINITY
+    Number.POSITIVE_INFINITY,
   );
   const maxY = flatY.reduce(
     (acc, cur) => (acc > cur ? acc : cur),
-    Number.NEGATIVE_INFINITY
+    Number.NEGATIVE_INFINITY,
   );
 
   return { minX, maxX, minY, maxY };
@@ -73,19 +73,17 @@ function initGameBoard({ minX, maxX, minY, maxY }: GameCoodRange): GameBoard {
   return startBoard;
 }
 
-const normalizer =
-  (gameCoordRange: GameCoodRange) =>
-  (c: Coord): Coord => {
-    return {
-      x: c.x - gameCoordRange.minX,
-      y: c.y - gameCoordRange.minY,
-    };
+const normalizer = (gameCoordRange: GameCoodRange) => (c: Coord): Coord => {
+  return {
+    x: c.x - gameCoordRange.minX,
+    y: c.y - gameCoordRange.minY,
   };
+};
 
 function placeRocks(
   path: SinglePath,
   board: GameBoard,
-  gameCoordRange: GameCoodRange
+  gameCoordRange: GameCoodRange,
 ): GameBoard {
   const coordPairs: Array<[Coord, Coord]> = [];
   for (let i = 1; i < path.length; i++) {
@@ -132,7 +130,7 @@ function traverseSand(
   board: GameBoard,
   curPos: Coord,
   source: Coord,
-  hasFloor = true
+  hasFloor = true,
 ): { nextBoard: GameBoard; shouldContinue: boolean; newSource: Coord } {
   const bottom = { x: curPos.x, y: curPos.y + 1 };
   const bottomLeft = { x: curPos.x - 1, y: curPos.y + 1 };
@@ -152,7 +150,7 @@ function traverseSand(
   const clonedBoard: GameBoard = JSON.parse(JSON.stringify(board));
 
   const intoAbyss = [bottom, bottomLeft, bottomRight].some(
-    (c) => !board?.[c.y]?.[c.x]
+    (c) => !board?.[c.y]?.[c.x],
   );
 
   // eww mutations
@@ -195,7 +193,7 @@ async function main() {
 
   const boardWithRocks = paths.reduce(
     (acc, cur) => placeRocks(cur, acc, gameCoordRange),
-    start
+    start,
   );
   (function partA() {
     let curBoard = boardWithRocks;
@@ -218,10 +216,10 @@ async function main() {
   const boardWithFloor = JSON.parse(JSON.stringify(boardWithRocks));
   (function partB() {
     boardWithFloor.push(
-      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.AIR)
+      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.AIR),
     );
     boardWithFloor.push(
-      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.ROCK)
+      [...Array(boardWithFloor[0].length).keys()].map((_) => BoardElem.ROCK),
     );
 
     let curBoard = boardWithFloor;

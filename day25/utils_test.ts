@@ -1,6 +1,6 @@
 // url_test.ts
 import { assertEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
-import { decimalToSnafu } from "./main.ts";
+import { decimalToSnafu } from "./utils.ts";
 
 type TestCase = Array<[number, string]>;
 
@@ -23,7 +23,7 @@ const testCases: TestCase = [
 ];
 
 testCases
-  .filter((t) => t[0] === 12345)
+  // .filter((t) => t[0] === 12345)
   .forEach(([n, s]) =>
     Deno.test(`test: ${s}`, () => {
       const res = decimalToSnafu(n);
