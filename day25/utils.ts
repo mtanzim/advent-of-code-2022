@@ -25,7 +25,6 @@ export function decimalToSnafu(n: number): string {
   };
 
   const convertToSnafuDigits = (ns: number[]): number[] => {
-    console.log(ns.join(""));
     const lastBadDigitIdx = ns.findLastIndex((n) => n > 2);
     const lastBadDigit = ns.findLast((n) => n > 2);
     if (lastBadDigitIdx === -1 || lastBadDigit === undefined) {
@@ -65,7 +64,6 @@ export function decimalToSnafu(n: number): string {
   const base5Dec = convertTo5base(n, [], multipliers);
   const base5WithCorrectDigits = convertToSnafuDigits(base5Dec);
 
-  console.log(base5WithCorrectDigits);
   const snafuChars = base5WithCorrectDigits.map(convertToSnafuChar).join("");
 
   if (n !== snafuToDecimal(snafuChars)) {
@@ -96,7 +94,6 @@ export function snafuToDecimal(snafu: string): number {
   const multipliers = [...Array(digits.length)]
     .map((_, idx) => Math.pow(5, idx))
     .toReversed();
-  // console.log(multipliers);
   const decipheredDigits = digits.map(decipherWeirdAssSnafuDigits);
   const values = decipheredDigits.map((v, i) => v * multipliers[i]);
   return values.reduce((acc, cur) => acc + cur, 0);
