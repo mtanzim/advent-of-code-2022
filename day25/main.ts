@@ -51,6 +51,7 @@ export function decimalToSnafu(n: number): string {
   };
 
   const convertToSnafuDigits = (ns: number[]): number[] => {
+    console.log(ns.join(''))
     const lastBadDigitIdx = ns.findLastIndex((n) => n === 3 || n === 4);
     if (lastBadDigitIdx === -1) {
       return ns;
