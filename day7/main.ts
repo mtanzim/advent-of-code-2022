@@ -1,29 +1,3 @@
-// TODO: come back to this, it's a tree height algo
-const _input = `$ cd /
-$ ls
-dir a
-14848514 b.txt
-8504156 c.dat
-dir d
-$ cd a
-$ ls
-dir e
-29116 f
-2557 g
-62596 h.lst
-$ cd e
-$ ls
-584 i
-$ cd ..
-$ cd ..
-$ cd d
-$ ls
-4060174 j
-8033020 d.log
-5626152 d.ext
-7214296 k
-`;
-
 function parse(input: string): string[] {
   return input.split("\n");
 }
@@ -31,6 +5,79 @@ function parse(input: string): string[] {
 interface Accum {
   curPath: string[];
   curSizes: Record<string, number>;
+}
+
+type Node = {
+  name: string;
+  size: number;
+  children: Node[] | null;
+  parent: Node | null;
+};
+
+function buildTree(lines: string[], curNode: Node | null, head: Node): Node {
+  if (lines.length === 0) {
+    return head;
+  }
+  const [line, ...tail] = lines;
+  const tokens = line.split(" ");
+  if (line.startsWith("$") && tokens[1] === "cd") {
+    // starting from root
+    if (!curNode) {
+      const head = {
+        name: tokens[2],
+        size: 0,
+        children: [],
+        parent: null,
+      };
+      return buildTree(tail, head, head);
+    }
+    const dirName = tokens?.[2];
+
+    // going in a child directory
+    if (dirName !== "..") {
+      const childDir = curNode?.children?.find((c) => c.name === dirName);
+      if (!childDir) {
+        console.error(line);
+        throw new Error("should not happen: could not find child dir!");
+      }
+      return buildTree(tail, childDir, head);
+    }
+
+    // going up to a parent!
+    return buildTree(tail, curNode?.parent || null, head);
+  }
+
+  if (line.startsWith("$") && tokens[1] === "ls") {
+    const nextCmdIndex = tail.findIndex((l) => l.startsWith("$"));
+    const childrenLines =
+      nextCmdIndex === -1 ? tail.slice() : tail.slice(0, nextCmdIndex);
+    if (!curNode) {
+      throw new Error("should not happen!");
+    }
+    curNode.children = childrenLines.map((c) => {
+      const tokens = c.split(" ");
+      if (tokens?.[0] === "dir") {
+        return {
+          name: tokens?.[1],
+
+          size: 0,
+          parent: curNode,
+          children: [],
+        };
+      }
+
+      return {
+        name: tokens?.[1],
+        size: Number(tokens?.[0]),
+        parent: curNode,
+        children: null,
+      };
+    });
+    if (nextCmdIndex === -1) {
+      return head;
+    }
+    return buildTree(tail.slice(nextCmdIndex), curNode, head);
+  }
 }
 
 function getFileSizeMap(lines: string[]): Record<string, number> {
@@ -77,7 +124,7 @@ function getFileSizeMap(lines: string[]): Record<string, number> {
         },
       };
     },
-    { curPath: [], curSizes: {} },
+    { curPath: [], curSizes: {} }
   );
 
   return fileSizeMap.curSizes;
@@ -85,38 +132,40 @@ function getFileSizeMap(lines: string[]): Record<string, number> {
 
 async function main() {
   const text = await Deno.readTextFile("./day7/input.txt");
+  const head = buildTree(parse(text), null, null);
+  console.log(head);
 
-  // const fileSizes = getFileSizeMap(parse(input));
-  const fileSizes = getFileSizeMap(parse(text));
+  //   // const fileSizes = getFileSizeMap(parse(input));
+  //   const fileSizes = getFileSizeMap(parse(text));
 
-  const allKeys = Object.keys(fileSizes);
-  const pathGroups = Object.entries(fileSizes).map(([path, _size]) => {
-    const subPaths = allKeys
-      .filter((key) => key.startsWith(path))
-      .sort((a, b) => a.split("/").length - b.split("/").length);
-    return { path, subPaths };
-  });
+  //   const allKeys = Object.keys(fileSizes);
+  //   const pathGroups = Object.entries(fileSizes).map(([path, _size]) => {
+  //     const subPaths = allKeys
+  //       .filter((key) => key.startsWith(path))
+  //       .sort((a, b) => a.split("/").length - b.split("/").length);
+  //     return { path, subPaths };
+  //   });
 
-  console.log(pathGroups);
+  //   console.log(pathGroups);
 
-  // TODO: this is wrong, it's not fully recursing all subpaths and summing their sizes correctly
-  const totalSizes = Object.entries(fileSizes).map(([path, _size]) => {
-    const subPaths = allKeys.filter((key) => key.startsWith(path));
-    console.log({ path, subPaths });
-    const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], 0);
-    return [path, totalSize];
-  });
+  //   // TODO: this is wrong, it's not fully recursing all subpaths and summing their sizes correctly
+  //   const totalSizes = Object.entries(fileSizes).map(([path, _size]) => {
+  //     const subPaths = allKeys.filter((key) => key.startsWith(path));
+  //     console.log({ path, subPaths });
+  //     const totalSize = subPaths.reduce((acc, cur) => acc + fileSizes[cur], 0);
+  //     return [path, totalSize];
+  //   });
 
-  const filteredDirectories = totalSizes.filter(([_, size]) => size <= 100000);
-  const sum = filteredDirectories.reduce(
-    (acc, [_, size]) => acc + Number(size),
-    0,
-  );
+  //   const filteredDirectories = totalSizes.filter(([_, size]) => size <= 100000);
+  //   const sum = filteredDirectories.reduce(
+  //     (acc, [_, size]) => acc + Number(size),
+  //     0
+  //   );
 
-  console.log(fileSizes);
-  console.log(totalSizes);
-  console.log(filteredDirectories);
-  console.log(sum);
+  //   console.log(fileSizes);
+  //   console.log(totalSizes);
+  //   console.log(filteredDirectories);
+  //   console.log(sum);
 }
 
 main();
