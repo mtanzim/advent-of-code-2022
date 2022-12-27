@@ -9,7 +9,11 @@ type Node = {
   parent: Node | null;
 };
 
-function buildTree(lines: string[], curNode: Node | null, head: Node): Node {
+function buildTree(
+  lines: string[],
+  curNode: Node | null,
+  head: Node | null,
+): Node | null {
   if (lines.length === 0) {
     return head;
   }
@@ -44,8 +48,9 @@ function buildTree(lines: string[], curNode: Node | null, head: Node): Node {
 
   if (line.startsWith("$") && tokens[1] === "ls") {
     const nextCmdIndex = tail.findIndex((l) => l.startsWith("$"));
-    const childrenLines =
-      nextCmdIndex === -1 ? tail.slice() : tail.slice(0, nextCmdIndex);
+    const childrenLines = nextCmdIndex === -1
+      ? tail.slice()
+      : tail.slice(0, nextCmdIndex);
     if (!curNode) {
       throw new Error("should not happen!");
     }
@@ -54,7 +59,6 @@ function buildTree(lines: string[], curNode: Node | null, head: Node): Node {
       if (tokens?.[0] === "dir") {
         return {
           name: tokens?.[1],
-
           size: 0,
           parent: curNode,
           children: [],
