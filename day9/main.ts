@@ -43,7 +43,7 @@ function traverse(
 
   const newTracker = new Set(tracker);
   if (!newTracker.has(coordToString(tail))) {
-    console.log(`tail going to ${coordToString(tail)}`);
+    // console.log(`tail going to ${coordToString(tail)}`);
     newTracker.add(coordToString(tail));
   }
 
@@ -71,12 +71,18 @@ function traverse(
       return tail;
     }
     // same column: move vertically
-    if (hx === tx && Math.abs(hy - ty) == 2) {
-      return { x: tx, y: ty - (ty - hy) - 1 };
+    if (hx === tx && hy - ty === 2) {
+      return { x: tx, y: ty + 1 };
+    }
+    if (hx === tx && hy - ty === -2) {
+      return { x: tx, y: ty - 1 };
     }
     // same row: move horizontally
-    if (hy === ty && Math.abs(hx - tx) == 2) {
-      return { x: tx - (tx - hx) - 1, y: ty };
+    if (hy === ty && hx - tx === 2) {
+      return { x: tx + 1, y: ty };
+    }
+    if (hy === ty && hx - tx === -2) {
+      return { x: tx - 1, y: ty };
     }
 
     // diagonal movements
@@ -84,28 +90,51 @@ function traverse(
       return { x: tx + 1, y: ty + 1 };
     }
 
-    if (hy - ty === -2 && hx - tx === 1) {
-      return { x: tx + 1, y: ty - 1 };
-    }
-    if (hx - tx === 2 && hy - ty === 1) {
+    if (hy - ty === 1 && hx - tx === 2) {
       return { x: tx + 1, y: ty + 1 };
     }
 
-    if (hx - tx === 2 && hy - ty === -1) {
-      return { x: tx + 1, y: ty - 1 };
-    }
-
-    if (hx - tx === -2 && hy - ty === 1) {
+    if (hy - ty === 2 && hx - tx === -1) {
       return { x: tx - 1, y: ty + 1 };
     }
 
-    if (hx - tx === -2 && hy - ty === -1) {
+    if (hy - ty === 1 && hx - tx === -2) {
+      return { x: tx - 1, y: ty + 1 };
+    }
+
+    if (hy - ty === 1 && hx - tx === 2) {
+      return { x: tx + 1, y: ty + 1 };
+    }
+
+    if (hy - ty === -2 && hx - tx === 1) {
+      return { x: tx + 1, y: ty - 1 };
+    }
+
+    if (hy - ty === -1 && hx - tx === 2) {
+      return { x: tx + 1, y: ty - 1 };
+    }
+
+    if (hy - ty === -1 && hx - tx === -2) {
+      return { x: tx - 1, y: ty - 1 };
+    }
+
+    if (hy - ty === 1 && hx - tx === 2) {
+      return { x: tx + 1, y: ty + 1 };
+    }
+
+    if (hy - ty === -2 && hx - tx === -1) {
       return { x: tx - 1, y: ty - 1 };
     }
 
     console.error(currentPos);
     throw new Error("missed a branch");
   })();
+
+  console.log(dir);
+  console.log(`head at ${coordToString(head)}`);
+  console.log(`tail going to ${coordToString(nextTail)}`);
+  console.log();
+
   return traverse(rest, { head: nextHead, tail: nextTail }, newTracker);
 }
 
