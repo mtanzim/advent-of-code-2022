@@ -83,6 +83,7 @@ function buildTree(
   throw new Error("should not happen: catch all branch!");
 }
 
+// mutates!
 function buildHeight(node: Node): number {
   if (!node.children) {
     return node.size;
@@ -106,12 +107,20 @@ function listDirs(node: Node | null): DirList {
 async function main() {
   const text = await Deno.readTextFile("./day7/input.txt");
   const head = buildTree(parse(text), null, null);
-  if (head) {
-    const total = buildHeight(head);
-    console.log(head);
-    console.log(total);
-    console.log(listDirs(head));
+
+  if (!head) {
+    throw new Error("could not build tree˝");
   }
+
+  buildHeight(head);
+  const dirList = listDirs(head);
+  const res = dirList.filter((d) => d.totalSize <= 100000).map((d) =>
+    d.totalSize
+  ).reduce(
+    (acc, cur) => acc + cur,
+    0,
+  );
+  console.log(res);
 }
 
 main();
