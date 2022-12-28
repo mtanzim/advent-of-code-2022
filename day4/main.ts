@@ -1,6 +1,3 @@
-// TODO: this doesn't work yet
-// range conditions are incorrect
-
 type ParsedInput = {
   min: number;
   max: number;
@@ -22,22 +19,36 @@ function parse(text: string): Array<ParsedPair> {
   }) as Array<ParsedPair>;
 }
 
-(async function main() {
-  const text = await Deno.readTextFile("./day4/input.txt");
-  const parsedInputs = parse(text);
-  const result = parsedInputs.reduce((acc, cur) => {
+function fullyOverlap(pairs: ParsedPair[]): number {
+  return pairs.reduce((acc, cur) => {
     const [a, b] = cur;
     if (a.min <= b.min && a.max >= b.max) {
-      console.log("a contains b");
-      console.log({ a, b });
       return acc + 1;
     }
     if (b.min <= a.min && b.max >= a.max) {
-      console.log("b contains a");
-      console.log({ a, b });
       return acc + 1;
     }
     return acc;
   }, 0);
-  console.log(result);
+}
+
+function anyOverlap(pairs: ParsedPair[]): number {
+  const notOverlapping = pairs.reduce((acc, cur) => {
+    const [a, b] = cur;
+    if (b.min > a.max) {
+      return acc + 1;
+    }
+    if (a.min > b.max) {
+      return acc + 1;
+    }
+    return acc;
+  }, 0);
+  return pairs.length - notOverlapping;
+}
+
+(async function main() {
+  const text = await Deno.readTextFile("./day4/input.txt");
+  const fullOverlaps = fullyOverlap(parse(text));
+  const anyOverlaps = anyOverlap(parse(text));
+  console.log({ fullOverlaps, anyOverlaps });
 })();
