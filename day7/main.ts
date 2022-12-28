@@ -132,7 +132,7 @@ function buildSizes(node: Node): number {
 
 function listDirs(node: Node | null): DirList {
   if (node?.children) {
-    return node.children.map((c) => listDirs(c)).flat().concat({
+    return node.children.flatMap(listDirs).concat({
       name: node.name,
       totalSize: node.size,
     });
