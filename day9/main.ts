@@ -10,7 +10,12 @@ function parse(input: string): Array<Move> {
   >;
 }
 
+function flattenDir(moves: Move[]): Direction[] {
+  return moves.flatMap(([dir, steps]) => [...Array(steps)].map((_) => dir));
+}
+
 (async function main() {
   const text = await Deno.readTextFile("./day9/input.txt");
-  console.log(parse(text));
+  const moves = flattenDir(parse(text));
+  console.log(moves);
 })();

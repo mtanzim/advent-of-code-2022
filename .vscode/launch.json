@@ -10,7 +10,7 @@
       "type": "pwa-node",
       "program": "${file}",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "/Users/tanzimmokammel/.deno/bin/deno",
+      "runtimeExecutable": "deno",
       "runtimeArgs": [
         "run",
         "--inspect-brk",
