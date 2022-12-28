@@ -30,22 +30,18 @@ function coordToString({ x, y }: Coord): string {
   return `${x}|${y}`;
 }
 
-function traverse(
-  directions: Direction[],
-  currentPos: Position,
-  tracker: Tracker,
-): Tracker {
-  if (directions.length === 0) {
-    return tracker;
-  }
-  const { head, tail } = currentPos;
-  const [dir, ...rest] = directions;
+interface Accum {
+  currentPos: Position;
+  tracker: Tracker;
+}
 
-  const newTracker = new Set(tracker);
-  if (!newTracker.has(coordToString(tail))) {
-    // console.log(`tail going to ${coordToString(tail)}`);
-    newTracker.add(coordToString(tail));
-  }
+function traverse(
+  acc: Accum,
+  dir: Direction,
+) {
+  const { head, tail } = acc.currentPos;
+
+  acc.tracker.add(coordToString(tail));
 
   const nextHead: Coord = (() => {
     const { x, y } = head;
@@ -66,10 +62,7 @@ function traverse(
   const nextTail: Coord = (() => {
     const { x: hx, y: hy } = head;
     const { x: tx, y: ty } = tail;
-    // touching cases: do not move tail
-    if (Math.abs(hx - tx) <= 1 && Math.abs(hy - ty) <= 1) {
-      return tail;
-    }
+
     // same column: move vertically
     if (hx === tx && hy - ty === 2) {
       return { x: tx, y: ty + 1 };
@@ -87,10 +80,6 @@ function traverse(
 
     // diagonal movements
     if (hy - ty === 2 && hx - tx === 1) {
-      return { x: tx + 1, y: ty + 1 };
-    }
-
-    if (hy - ty === 1 && hx - tx === 2) {
       return { x: tx + 1, y: ty + 1 };
     }
 
@@ -118,35 +107,37 @@ function traverse(
       return { x: tx - 1, y: ty - 1 };
     }
 
-    if (hy - ty === 1 && hx - tx === 2) {
-      return { x: tx + 1, y: ty + 1 };
-    }
-
     if (hy - ty === -2 && hx - tx === -1) {
       return { x: tx - 1, y: ty - 1 };
     }
 
-    console.error(currentPos);
+    // touching cases: do not move tail
+    if (Math.abs(hx - tx) <= 1 && Math.abs(hy - ty) <= 1) {
+      return tail;
+    }
+    console.error(acc.currentPos);
     throw new Error("missed a branch");
   })();
 
-  console.log(dir);
-  console.log(`head at ${coordToString(head)}`);
-  console.log(`tail going to ${coordToString(nextTail)}`);
-  console.log();
+  acc.tracker.add(coordToString(nextTail));
 
-  return traverse(rest, { head: nextHead, tail: nextTail }, newTracker);
+  return {
+    currentPos: { head: nextHead, tail: nextTail },
+    tracker: acc.tracker,
+  };
 }
 
 (async function main() {
   const text = await Deno.readTextFile("./day9/input.txt");
   const moves = flattenDir(parse(text));
   const startingPos: Coord = { x: 0, y: 0 };
-  const tracker = traverse(
-    moves,
-    { head: startingPos, tail: startingPos },
-    new Set(),
-  );
-  console.log(tracker);
-  console.log(tracker.size);
+  const tracker = moves.reduce(traverse, {
+    currentPos: {
+      head: startingPos,
+      tail: startingPos,
+    },
+    tracker: new Set<string>(),
+  });
+  console.log(tracker.tracker.size);
+  // console.log(tracker.size);
 })();
