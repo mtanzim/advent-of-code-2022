@@ -1,6 +1,4 @@
-function parse(input: string): string[] {
-  return input.split("\n");
-}
+main();
 
 type Node = {
   name: string;
@@ -8,6 +6,42 @@ type Node = {
   children: Node[] | null;
   parent: Node | null;
 };
+
+type DirList = Array<{ name: string; totalSize: number }>;
+
+const TOTAL_SPACE_NEEDED = 30000000;
+const HDD_SIZE = 70000000;
+
+async function main() {
+  const text = await Deno.readTextFile("./day7/input.txt");
+  const head = buildTree(parse(text), null, null);
+
+  if (!head) {
+    throw new Error("could not build tree˝");
+  }
+
+  const totalOccupied = buildSizes(head);
+  const dirList = listDirs(head);
+  // part a
+  const res = dirList.filter((d) => d.totalSize <= 100000).map((d) =>
+    d.totalSize
+  ).reduce(
+    (acc, cur) => acc + cur,
+    0,
+  );
+  console.log(res);
+
+  // part b
+  const needToDelete = TOTAL_SPACE_NEEDED - (HDD_SIZE - totalOccupied);
+  const sortedDirs = dirList.toSorted((a, b) => a.totalSize - b.totalSize);
+  console.log(
+    sortedDirs.find((dir) => dir.totalSize > needToDelete)?.totalSize,
+  );
+}
+
+function parse(input: string): string[] {
+  return input.split("\n");
+}
 
 function buildTree(
   lines: string[],
@@ -96,8 +130,6 @@ function buildSizes(node: Node): number {
   return node.size;
 }
 
-type DirList = Array<{ name: string; totalSize: number }>;
-
 function listDirs(node: Node | null): DirList {
   if (node?.children) {
     return node.children.map((c) => listDirs(c)).flat().concat({
@@ -107,35 +139,3 @@ function listDirs(node: Node | null): DirList {
   }
   return [];
 }
-
-const TOTAL_SPACE_NEEDED = 30000000;
-const HDD_SIZE = 70000000;
-
-async function main() {
-  const text = await Deno.readTextFile("./day7/input.txt");
-  const head = buildTree(parse(text), null, null);
-
-  if (!head) {
-    throw new Error("could not build tree˝");
-  }
-
-  const totalOccupied = buildSizes(head);
-  const dirList = listDirs(head);
-  // part a
-  const res = dirList.filter((d) => d.totalSize <= 100000).map((d) =>
-    d.totalSize
-  ).reduce(
-    (acc, cur) => acc + cur,
-    0,
-  );
-  console.log(res);
-
-  // part b
-  const needToDelete = TOTAL_SPACE_NEEDED - (HDD_SIZE - totalOccupied);
-  const sortedDirs = dirList.toSorted((a, b) => a.totalSize - b.totalSize);
-  console.log(
-    sortedDirs.find((dir) => dir.totalSize > needToDelete)?.totalSize,
-  );
-}
-
-main();
