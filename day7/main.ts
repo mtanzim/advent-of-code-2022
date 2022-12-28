@@ -83,12 +83,16 @@ function buildTree(
   throw new Error("should not happen: catch all branch!");
 }
 
-// mutates!
-function buildHeight(node: Node): number {
+/**
+Mutates!!! Takes the head of the tree
+and recursively fills out the sizes
+using the children nodes.
+*/
+function buildSizes(node: Node): number {
   if (!node.children) {
     return node.size;
   }
-  node.size = node.children.map(buildHeight).reduce((acc, cur) => acc + cur, 0);
+  node.size = node.children.map(buildSizes).reduce((acc, cur) => acc + cur, 0);
   return node.size;
 }
 
@@ -104,6 +108,9 @@ function listDirs(node: Node | null): DirList {
   return [];
 }
 
+const TOTAL_SPACE_NEEDED = 30000000;
+const HDD_SIZE = 70000000;
+
 async function main() {
   const text = await Deno.readTextFile("./day7/input.txt");
   const head = buildTree(parse(text), null, null);
@@ -112,8 +119,9 @@ async function main() {
     throw new Error("could not build tree˝");
   }
 
-  buildHeight(head);
+  const totalOccupied = buildSizes(head);
   const dirList = listDirs(head);
+  // part a
   const res = dirList.filter((d) => d.totalSize <= 100000).map((d) =>
     d.totalSize
   ).reduce(
@@ -121,6 +129,13 @@ async function main() {
     0,
   );
   console.log(res);
+
+  // part b
+  const needToDelete = TOTAL_SPACE_NEEDED - (HDD_SIZE - totalOccupied);
+  const sortedDirs = dirList.toSorted((a, b) => a.totalSize - b.totalSize);
+  console.log(
+    sortedDirs.find((dir) => dir.totalSize > needToDelete)?.totalSize,
+  );
 }
 
 main();
