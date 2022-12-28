@@ -83,10 +83,35 @@ function buildTree(
   throw new Error("should not happen: catch all branch!");
 }
 
+function buildHeight(node: Node): number {
+  if (!node.children) {
+    return node.size;
+  }
+  node.size = node.children.map(buildHeight).reduce((acc, cur) => acc + cur, 0);
+  return node.size;
+}
+
+type DirList = Array<{ name: string; totalSize: number }>;
+
+function listDirs(node: Node | null): DirList {
+  if (node?.children) {
+    return node.children.map((c) => listDirs(c)).flat().concat({
+      name: node.name,
+      totalSize: node.size,
+    });
+  }
+  return [];
+}
+
 async function main() {
   const text = await Deno.readTextFile("./day7/input.txt");
   const head = buildTree(parse(text), null, null);
-  console.log(head);
+  if (head) {
+    const total = buildHeight(head);
+    console.log(head);
+    console.log(total);
+    console.log(listDirs(head));
+  }
 }
 
 main();
