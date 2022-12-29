@@ -19,20 +19,8 @@ type Coord = {
   y: number;
 };
 
-type Position = {
-  head: Coord;
-  tail: Coord;
-};
-
-type Tracker = Set<string>;
-
 function coordToString({ x, y }: Coord): string {
   return `${x}|${y}`;
-}
-
-interface Accum {
-  currentPos: Position;
-  tracker: Tracker;
 }
 
 function getMove(v: number) {
@@ -76,36 +64,21 @@ function nextTail(head: Coord, tail: Coord) {
   return tail;
 }
 
-function traverse(
-  acc: Accum,
-  dir: Direction,
-): Accum {
-  const { head, tail } = acc.currentPos;
-  const nextHeadPos = nextHead(head, dir);
-  const nextTailPos = nextTail(nextHeadPos, tail);
-  acc.tracker.add(coordToString(nextTailPos));
-
-  return {
-    currentPos: { head: nextHeadPos, tail: nextTailPos },
-    tracker: acc.tracker,
-  };
-}
-
-type AccumB = {
+type Accum = {
   positions: Array<Coord>;
   tracker: Set<string>;
 };
 
-function traverseB(
-  acc: AccumB,
+function traverse(
+  acc: Accum,
   dir: Direction,
-): AccumB {
-  const [head, ...rest] = Object.values(acc.positions);
+): Accum {
+  const [head, ...rest] = acc.positions;
   const nextHeadPos = nextHead(head, dir);
 
   const nextPositions = rest.reduce(
-    (acc, cur) => {
-      const nextTailPos = nextTail(acc.curHead, cur);
+    (acc, curCoord) => {
+      const nextTailPos = nextTail(acc.curHead, curCoord);
       return {
         positions: acc.positions.concat(nextTailPos),
         curHead: nextTailPos,
@@ -130,17 +103,13 @@ function traverseB(
   const text = await Deno.readTextFile("./day9/input.txt");
   const moves = flattenDir(parse(text));
   const startingPos: Coord = { x: 0, y: 0 };
-  const tracker = moves.reduce(traverse, {
-    currentPos: {
-      head: startingPos,
-      tail: startingPos,
-    },
-    tracker: new Set<string>([coordToString(startingPos)]),
+
+  const results = [2, 10].map((numKnots) => {
+    const tailTracker = moves.reduce(traverse, {
+      positions: [...Array(numKnots)].map((_) => startingPos),
+      tracker: new Set<string>([coordToString(startingPos)]),
+    });
+    return { numKnots, tailMoves: tailTracker.tracker.size };
   });
-  console.log(tracker.tracker.size);
-  const trackerB = moves.reduce(traverseB, {
-    positions: [...Array(10)].map((_) => startingPos),
-    tracker: new Set<string>([coordToString(startingPos)]),
-  });
-  console.log(trackerB.tracker.size);
+  console.log(results);
 })();
