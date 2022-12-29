@@ -66,9 +66,20 @@ function traverse(
     const dy = hy - ty;
 
     if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-      const moveX = dx > 0 ? 1 : -1;
-      const moveY = dy > 0 ? 1 : -1;
-      return { x: tx + moveX, y: ty + moveY };
+      const getMove = (v: number) => {
+        switch (true) {
+          case v === 0:
+            return 0;
+          case v > 0:
+            return 1;
+          case v < 0:
+            return -1;
+          default:
+            throw new Error("invalid input to getMove");
+        }
+      };
+
+      return { x: tx + getMove(dx), y: ty + getMove(dy) };
     }
     return tail;
   })();
