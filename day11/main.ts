@@ -6,6 +6,7 @@ type Monkey = {
   test: (v: number) => boolean;
   throwIfTrue: Monkey["id"];
   throwIfFalse: Monkey["id"];
+  inspections: number;
 };
 
 function parse(text: string): Monkey[] {
@@ -59,12 +60,19 @@ function parse(text: string): Monkey[] {
       test,
       throwIfTrue,
       throwIfFalse,
+      inspections: 0,
     };
   });
 }
 
 function getMonkeyStatus(monkeys: Monkey[]): string {
-  return monkeys.map((m) => `Monkey ${m.id}: ${m.items.join(", ")}`).join("\n");
+  const itemStatus = monkeys.map((m) => `Monkey ${m.id}: ${m.items.join(", ")}`)
+    .join("\n");
+  const countStatus = monkeys.map((m) =>
+    `Monkey ${m.id} inspected items ${m.inspections} times`
+  ).join("\n");
+
+  return itemStatus + "\n\n" + countStatus + "\n";
 }
 
 /**
@@ -76,6 +84,7 @@ function runRound(monkeys: Monkey[]): void {
       Math.floor(m.op(worryLevel) / 3)
     );
     updatedItems.forEach((worryLevel) => {
+      m.inspections++;
       const throwToMonkey = m.test(worryLevel) ? m.throwIfTrue : m.throwIfFalse;
       monkeys[throwToMonkey].items.push(worryLevel);
     });
@@ -86,8 +95,12 @@ function runRound(monkeys: Monkey[]): void {
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
   const monkeys: Monkey[] = parse(text);
-  // console.log(getMonkeyStatus(monkeys));
+  const numRounds = 20;
 
-  [...Array(20)].forEach((_) => runRound(monkeys));
+  [...Array(numRounds)].forEach((_) => runRound(monkeys));
   console.log(getMonkeyStatus(monkeys));
+  const topInspections = monkeys.map((m) => m.inspections).sort((a, b) => b - a)
+    .slice(0, 2)
+    .reduce((acc, cur) => acc * cur, 1);
+  console.log(topInspections);
 })();
