@@ -67,7 +67,7 @@ function parse(text: string): Monkey[] {
   });
 }
 
-function getMonkeyStatus(monkeys: Monkey[]): string {
+function _getMonkeyStatus(monkeys: Monkey[]): string {
   const itemStatus = monkeys.map((m) => `Monkey ${m.id}: ${m.items.join(", ")}`)
     .join("\n");
   const countStatus = monkeys.map((m) =>
@@ -108,7 +108,6 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
       ({ worryDivider, numRounds }) => {
         const monkeys: Monkey[] = parse(text);
         let maxIdx = -1;
-        // let secondMaxIdx = 0;
         let max = BigInt(0);
         let secondMax = BigInt(0);
         [...Array(numRounds)].forEach((_, idx) => {
@@ -127,12 +126,6 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
             }
           }
         });
-        // console.log(getMonkeyStatus(monkeys));
-        // const result = monkeys.map((m) => m.inspections).sort((a, b) =>
-        //   (a > b) ? -1 : ((a > b) ? 1 : 0)
-        // )
-        //   .slice(0, 2)
-        //   .reduce((acc, cur) => acc * cur, BigInt(1));
         console.log({ max, secondMax });
         console.log(max * secondMax);
       },
