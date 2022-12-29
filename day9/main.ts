@@ -62,61 +62,15 @@ function traverse(
   const nextTail: Coord = (() => {
     const { x: hx, y: hy } = head;
     const { x: tx, y: ty } = tail;
+    const dx = hx - tx;
+    const dy = hy - ty;
 
-    // same column: move vertically
-    if (hx === tx && hy - ty === 2) {
-      return { x: tx, y: ty + 1 };
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+      const moveX = dx > 0 ? 1 : -1;
+      const moveY = dy > 0 ? 1 : -1;
+      return { x: tx + moveX, y: ty + moveY };
     }
-    if (hx === tx && hy - ty === -2) {
-      return { x: tx, y: ty - 1 };
-    }
-    // same row: move horizontally
-    if (hy === ty && hx - tx === 2) {
-      return { x: tx + 1, y: ty };
-    }
-    if (hy === ty && hx - tx === -2) {
-      return { x: tx - 1, y: ty };
-    }
-
-    // diagonal movements
-    if (hy - ty === 2 && hx - tx === 1) {
-      return { x: tx + 1, y: ty + 1 };
-    }
-
-    if (hy - ty === 2 && hx - tx === -1) {
-      return { x: tx - 1, y: ty + 1 };
-    }
-
-    if (hy - ty === 1 && hx - tx === -2) {
-      return { x: tx - 1, y: ty + 1 };
-    }
-
-    if (hy - ty === 1 && hx - tx === 2) {
-      return { x: tx + 1, y: ty + 1 };
-    }
-
-    if (hy - ty === -2 && hx - tx === 1) {
-      return { x: tx + 1, y: ty - 1 };
-    }
-
-    if (hy - ty === -1 && hx - tx === 2) {
-      return { x: tx + 1, y: ty - 1 };
-    }
-
-    if (hy - ty === -1 && hx - tx === -2) {
-      return { x: tx - 1, y: ty - 1 };
-    }
-
-    if (hy - ty === -2 && hx - tx === -1) {
-      return { x: tx - 1, y: ty - 1 };
-    }
-
-    // touching cases: do not move tail
-    if (Math.abs(hx - tx) <= 1 && Math.abs(hy - ty) <= 1) {
-      return tail;
-    }
-    console.error(acc.currentPos);
-    throw new Error("missed a branch");
+    return tail;
   })();
 
   acc.tracker.add(coordToString(nextTail));
