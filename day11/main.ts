@@ -82,31 +82,17 @@ mutates!
  */
 function runRound(monkeys: Monkey[], worryDivider: bigint): void {
   for (const m of monkeys) {
-    // const updatedItems: bigint[] = m.items.map((worryLevel) =>
-    //   m.op(worryLevel) / worryDivider
-    // );
     for (let i = 0; i < m.items.length; i++) {
       const worryLevel = m.items[i];
       m.items[i] = m.op(worryLevel) / worryDivider;
 
-
       const newWorryLevel = m.items[i];
-      // m.items.forEach((newWorryLevel) => {
       m.inspections++;
-      const throwToMonkey = m.test(newWorryLevel) ? m.throwIfTrue : m.throwIfFalse;
+      const throwToMonkey = m.test(newWorryLevel)
+        ? m.throwIfTrue
+        : m.throwIfFalse;
       monkeys[throwToMonkey].items.push(newWorryLevel);
-      // m.inspections++;
-      // const throwToMonkey = m.test(worryLevel) ? m.throwIfTrue : m.throwIfFalse;
-      // monkeys[throwToMonkey].items.push(worryLevel);
     }
-    // for (let i = 0; i < m.items.length; i++) {
-    //   const worryLevel = m.items[i];
-    //   // m.items.forEach((worryLevel) => {
-    //   m.inspections++;
-    //   const throwToMonkey = m.test(worryLevel) ? m.throwIfTrue : m.throwIfFalse;
-    //   monkeys[throwToMonkey].items.push(worryLevel);
-    //   // });
-    // }
     m.items = [];
   }
 }
@@ -116,22 +102,37 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
 
   [
     { worryDivider: BigInt(3), numRounds: 20 },
-    // { worryDivider: BigInt(1), numRounds: 10000 },
+    // { worryDivider: BigInt(1), numRounds: 1000 },
   ]
     .forEach(
       ({ worryDivider, numRounds }) => {
         const monkeys: Monkey[] = parse(text);
+        let maxIdx = -1;
+        // let secondMaxIdx = 0;
+        let max = BigInt(0);
+        let secondMax = BigInt(0);
         [...Array(numRounds)].forEach((_, idx) => {
           console.log(`Round: ${idx + 1}`);
           runRound(monkeys, worryDivider);
+          for (let i = 0; i < monkeys.length; i++) {
+            if (monkeys[i].inspections > max) {
+              max = monkeys[i].inspections;
+              maxIdx = i;
+            }
+          }
+          for (let i = 0; i < monkeys.length; i++) {
+            if (monkeys[i].inspections > secondMax && i !== maxIdx) {
+              secondMax = monkeys[i].inspections;
+            }
+          }
         });
-        console.log(getMonkeyStatus(monkeys));
-        const result = monkeys.map((m) => m.inspections).sort((a, b) =>
-          (a > b) ? -1 : ((a > b) ? 1 : 0)
-        )
-          .slice(0, 2)
-          .reduce((acc, cur) => acc * cur, BigInt(1));
-        console.log(result);
+        // console.log(getMonkeyStatus(monkeys));
+        // const result = monkeys.map((m) => m.inspections).sort((a, b) =>
+        //   (a > b) ? -1 : ((a > b) ? 1 : 0)
+        // )
+        //   .slice(0, 2)
+        //   .reduce((acc, cur) => acc * cur, BigInt(1));
+        console.log(max * secondMax);
       },
     );
 })();
