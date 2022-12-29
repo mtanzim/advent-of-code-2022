@@ -1,13 +1,13 @@
 type Monkey = {
   // id is also order
   id: number;
-  items: bigint[];
-  op: (old: bigint) => bigint;
-  test: (v: bigint) => boolean;
+  items: number[];
+  op: (old: number) => number;
+  test: (v: number) => boolean;
   throwIfTrue: Monkey["id"];
   throwIfFalse: Monkey["id"];
-  inspections: bigint;
-  divisor: bigint;
+  inspections: number;
+  divisor: number;
 };
 
 function parse(text: string): Monkey[] {
@@ -18,42 +18,42 @@ function parse(text: string): Monkey[] {
       .split("\n");
     const id = Number(idLine.split(" ")[1].split(":")[0]);
 
-    const items = itemsLine.split(":")[1].split(",").map(BigInt);
+    const items = itemsLine.split(":")[1].split(",").map(Number);
 
     const getTrueFalseMonkey = (line: string): number =>
       Number(line.split("monkey")[1]);
     const throwIfTrue = getTrueFalseMonkey(trueLine);
     const throwIfFalse = getTrueFalseMonkey(falseLine);
 
-    const op: (n: bigint) => bigint = (() => {
+    const op: (n: number) => number = (() => {
       const opStr = opLine.split("new =")[1].replace("old", "").split(" ")
         .filter((c) => c !== "");
 
       const [op, v] = opStr;
 
-      // if (v !== "old" && isNaN(BigInt(v))) {
-      //   throw new Error("invalid value supplied");
-      // }
+      if (v !== "old" && isNaN(Number(v))) {
+        throw new Error("invalid value supplied");
+      }
       switch (op) {
         case "+":
           return v !== "old"
-            ? (old: bigint) => old + BigInt(v)
-            : (old: bigint) => old + old;
+            ? (old: number) => old + Number(v)
+            : (old: number) => old + old;
         case "*":
           return v !== "old"
-            ? (old: bigint) => old * BigInt(v)
-            : (old: bigint) => old * old;
+            ? (old: number) => old * Number(v)
+            : (old: number) => old * old;
         default:
           throw new Error("invalid operation identified!");
       }
     })();
 
-    const divisor = BigInt(testLine.split("by")[1]);
-    const test: (n: bigint) => boolean = (() => {
-      // if (isNaN(divisor)) {
-      //   throw new Error("failed to parse test divisor");
-      // }
-      return (n: bigint) => n % divisor === BigInt(0);
+    const divisor = Number(testLine.split("by")[1]);
+    const test: (n: number) => boolean = (() => {
+      if (isNaN(divisor)) {
+        throw new Error("failed to parse test divisor");
+      }
+      return (n: number) => n % divisor === Number(0);
     })();
 
     return {
@@ -63,13 +63,13 @@ function parse(text: string): Monkey[] {
       test,
       throwIfTrue,
       throwIfFalse,
-      inspections: BigInt(0),
+      inspections: Number(0),
       divisor,
     };
   });
 }
 
-function _getMonkeyStatus(monkeys: Monkey[]): string {
+function getMonkeyStatus(monkeys: Monkey[]): string {
   const itemStatus = monkeys.map((m) => `Monkey ${m.id}: ${m.items.join(", ")}`)
     .join("\n");
   const countStatus = monkeys.map((m) =>
@@ -82,35 +82,18 @@ function _getMonkeyStatus(monkeys: Monkey[]): string {
 /**
 mutates!
  */
-function runRound(monkeys: Monkey[], worryDivider: bigint): void {
+type NextWorryCalc = (worry: number) => number;
+function runRound(monkeys: Monkey[], nextWorryFn: NextWorryCalc): void {
   for (const m of monkeys) {
     for (let i = 0; i < m.items.length; i++) {
       const worryLevel = m.items[i];
-      const tempWorry = m.op(worryLevel);
-      m.items[i] = tempWorry / worryDivider;
-      const newWorryLevel = m.items[i];
+      const nextWorryLevel = nextWorryFn(m.op(worryLevel));
+      m.items[i] = nextWorryLevel;
       m.inspections++;
-      const throwToMonkey = m.test(newWorryLevel)
+      const throwToMonkey = m.test(nextWorryLevel)
         ? m.throwIfTrue
         : m.throwIfFalse;
-      monkeys[throwToMonkey].items.push(newWorryLevel);
-    }
-    m.items = [];
-  }
-}
-
-function runRoundB(monkeys: Monkey[], commonDivider: bigint): void {
-  for (const m of monkeys) {
-    for (let i = 0; i < m.items.length; i++) {
-      const worryLevel = m.items[i];
-      const tempWorry = m.op(worryLevel);
-      m.items[i] = tempWorry % commonDivider;
-      const newWorryLevel = m.items[i];
-      m.inspections++;
-      const throwToMonkey = m.test(newWorryLevel)
-        ? m.throwIfTrue
-        : m.throwIfFalse;
-      monkeys[throwToMonkey].items.push(newWorryLevel);
+      monkeys[throwToMonkey].items.push(nextWorryLevel);
     }
     m.items = [];
   }
@@ -120,42 +103,32 @@ function runRoundB(monkeys: Monkey[], commonDivider: bigint): void {
   const text = await Deno.readTextFile("./day11/input.txt");
 
   [
-    { worryDivider: BigInt(3), numRounds: 20 },
+    { worryDivider: 3, numRounds: 20 },
     { numRounds: 10000 },
   ]
     .forEach(
       ({ worryDivider, numRounds }) => {
         const monkeys: Monkey[] = parse(text);
-        let maxIdx = -1;
-        let max = BigInt(0);
-        let secondMax = BigInt(0);
 
-        const commonDivider: bigint = monkeys.reduce(
+        const commonDivider: number = monkeys.reduce(
           (acc, m) => m.divisor * acc,
-          BigInt(1),
+          Number(1),
         );
 
-        [...Array(numRounds)].forEach(() => {
-          if (worryDivider) {
-            runRound(monkeys, worryDivider);
-          } else {
-            runRoundB(monkeys, commonDivider);
-          }
+        const nextWorryFn = worryDivider
+          ? (n: number) => Math.floor(n / worryDivider)
+          : (n: number) => n % commonDivider;
 
-          for (let i = 0; i < monkeys.length; i++) {
-            if (monkeys[i].inspections > max) {
-              max = monkeys[i].inspections;
-              maxIdx = i;
-            }
-          }
-          for (let i = 0; i < monkeys.length; i++) {
-            if (monkeys[i].inspections > secondMax && i !== maxIdx) {
-              secondMax = monkeys[i].inspections;
-            }
-          }
+        [...Array(numRounds)].forEach(() => {
+          runRound(monkeys, nextWorryFn);
         });
+        const [max, secondMax] = monkeys.sort((a, b) =>
+          b.inspections - a.inspections
+        ).slice(0, 2).map((m) => m.inspections);
+        console.log(getMonkeyStatus(monkeys));
         console.log({ max, secondMax });
         console.log(max * secondMax);
+        console.log();
       },
     );
 })();
