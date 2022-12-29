@@ -7,6 +7,7 @@ type Monkey = {
   throwIfTrue: Monkey["id"];
   throwIfFalse: Monkey["id"];
   inspections: bigint;
+  divisor: bigint;
 };
 
 function parse(text: string): Monkey[] {
@@ -47,8 +48,8 @@ function parse(text: string): Monkey[] {
       }
     })();
 
+    const divisor = BigInt(testLine.split("by")[1]);
     const test: (n: bigint) => boolean = (() => {
-      const divisor = BigInt(testLine.split("by")[1]);
       // if (isNaN(divisor)) {
       //   throw new Error("failed to parse test divisor");
       // }
@@ -63,6 +64,7 @@ function parse(text: string): Monkey[] {
       throwIfTrue,
       throwIfFalse,
       inspections: BigInt(0),
+      divisor,
     };
   });
 }
@@ -97,12 +99,29 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
   }
 }
 
+function runRoundB(monkeys: Monkey[], commonDivider: bigint): void {
+  for (const m of monkeys) {
+    for (let i = 0; i < m.items.length; i++) {
+      const worryLevel = m.items[i];
+      const tempWorry = m.op(worryLevel);
+      m.items[i] = tempWorry % commonDivider;
+      const newWorryLevel = m.items[i];
+      m.inspections++;
+      const throwToMonkey = m.test(newWorryLevel)
+        ? m.throwIfTrue
+        : m.throwIfFalse;
+      monkeys[throwToMonkey].items.push(newWorryLevel);
+    }
+    m.items = [];
+  }
+}
+
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
 
   [
-    // { worryDivider: BigInt(3), numRounds: 20 },
-    { worryDivider: BigInt(1), numRounds: 1000 },
+    { worryDivider: BigInt(3), numRounds: 20 },
+    { numRounds: 10000 },
   ]
     .forEach(
       ({ worryDivider, numRounds }) => {
@@ -110,10 +129,19 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
         let maxIdx = -1;
         let max = BigInt(0);
         let secondMax = BigInt(0);
-        [...Array(numRounds)].forEach((_, idx) => {
-          // console.clear();
-          console.log(`Round: ${idx + 1}`);
-          runRound(monkeys, worryDivider);
+
+        const commonDivider: bigint = monkeys.reduce(
+          (acc, m) => m.divisor * acc,
+          BigInt(1),
+        );
+
+        [...Array(numRounds)].forEach(() => {
+          if (worryDivider) {
+            runRound(monkeys, worryDivider);
+          } else {
+            runRoundB(monkeys, commonDivider);
+          }
+
           for (let i = 0; i < monkeys.length; i++) {
             if (monkeys[i].inspections > max) {
               max = monkeys[i].inspections;
