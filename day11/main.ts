@@ -10,7 +10,7 @@ type Monkey = {
 
 function parse(text: string): Monkey[] {
   const monkeyClumps = text.split("\n\n");
-  const monkeys = monkeyClumps.map((clump) => {
+  return monkeyClumps.map((clump) => {
     const [idLine, itemsLine, opLine, testLine, trueLine, falseLine] = clump
       .split("\n");
     const id = Number(idLine.split(" ")[1].split(":")[0]);
@@ -18,8 +18,8 @@ function parse(text: string): Monkey[] {
 
     const getTrueFalseMonkey = (line: string): number =>
       Number(line.split("monkey")[1]);
-    const ifTrue = getTrueFalseMonkey(trueLine);
-    const ifFalse = getTrueFalseMonkey(falseLine);
+    const throwIfTrue = getTrueFalseMonkey(trueLine);
+    const throwIfFalse = getTrueFalseMonkey(falseLine);
 
     const op: (n: number) => number = (() => {
       const opStr = opLine.split("new =")[1].replace("old", "").split(" ")
@@ -44,12 +44,27 @@ function parse(text: string): Monkey[] {
       }
     })();
 
-    console.log(id);
+    const test: (n: number) => boolean = (() => {
+      const divisor = Number(testLine.split("by")[1]);
+      if (isNaN(divisor)) {
+        throw new Error("failed to parse test divisor");
+      }
+      return (n: number) => n % divisor === 0;
+    })();
+
+    return {
+      id,
+      items,
+      op,
+      test,
+      throwIfTrue,
+      throwIfFalse,
+    };
   });
-  console.log(monkeyClumps);
 }
 
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
-  parse(text);
+  const monkeys: Monkey[] = parse(text);
+  console.log(monkeys)
 })();
