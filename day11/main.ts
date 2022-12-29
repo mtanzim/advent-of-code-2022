@@ -63,7 +63,7 @@ function parse(text: string): Monkey[] {
       test,
       throwIfTrue,
       throwIfFalse,
-      inspections: Number(0),
+      inspections: 0,
       divisor,
     };
   });
@@ -112,7 +112,7 @@ function runRound(monkeys: Monkey[], nextWorryFn: NextWorryCalc): void {
 
         const commonDivider: number = monkeys.reduce(
           (acc, m) => m.divisor * acc,
-          Number(1),
+          1,
         );
 
         const nextWorryFn = worryDivider
