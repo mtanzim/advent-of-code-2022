@@ -35,57 +35,58 @@ interface Accum {
   tracker: Tracker;
 }
 
+function getMove(v: number) {
+  switch (true) {
+    case v === 0:
+      return 0;
+    case v > 0:
+      return 1;
+    case v < 0:
+      return -1;
+    default:
+      throw new Error("invalid input to getMove");
+  }
+}
+
+function nextHead(head: Coord, dir: Direction): Coord {
+  const { x, y } = head;
+  switch (dir) {
+    case "D":
+      return { x, y: y - 1 };
+    case "U":
+      return { x, y: y + 1 };
+    case "L":
+      return { x: x - 1, y };
+    case "R":
+      return { x: x + 1, y };
+    default:
+      throw new Error("invalid direction");
+  }
+}
+
+function nextTail(head: Coord, tail: Coord) {
+  const { x: hx, y: hy } = head;
+  const { x: tx, y: ty } = tail;
+  const dx = hx - tx;
+  const dy = hy - ty;
+
+  if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+    return { x: tx + getMove(dx), y: ty + getMove(dy) };
+  }
+  return tail;
+}
+
 function traverse(
   acc: Accum,
   dir: Direction,
 ) {
   const { head, tail } = acc.currentPos;
-
-  const nextHead: Coord = (() => {
-    const { x, y } = head;
-    switch (dir) {
-      case "D":
-        return { x, y: y - 1 };
-      case "U":
-        return { x, y: y + 1 };
-      case "L":
-        return { x: x - 1, y };
-      case "R":
-        return { x: x + 1, y };
-      default:
-        throw new Error("invalid direction");
-    }
-  })();
-
-  const nextTail: Coord = (() => {
-    const { x: hx, y: hy } = nextHead;
-    const { x: tx, y: ty } = tail;
-    const dx = hx - tx;
-    const dy = hy - ty;
-
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-      const getMove = (v: number) => {
-        switch (true) {
-          case v === 0:
-            return 0;
-          case v > 0:
-            return 1;
-          case v < 0:
-            return -1;
-          default:
-            throw new Error("invalid input to getMove");
-        }
-      };
-
-      return { x: tx + getMove(dx), y: ty + getMove(dy) };
-    }
-    return tail;
-  })();
-
-  acc.tracker.add(coordToString(nextTail));
+  const nextHeadPos = nextHead(head, dir);
+  const nextTailPos = nextTail(nextHeadPos, tail);
+  acc.tracker.add(coordToString(nextTailPos));
 
   return {
-    currentPos: { head: nextHead, tail: nextTail },
+    currentPos: { head: nextHeadPos, tail: nextTailPos },
     tracker: acc.tracker,
   };
 }
