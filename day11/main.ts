@@ -101,8 +101,8 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
   const text = await Deno.readTextFile("./day11/input.txt");
 
   [
-    { worryDivider: BigInt(3), numRounds: 20 },
-    // { worryDivider: BigInt(1), numRounds: 1000 },
+    // { worryDivider: BigInt(3), numRounds: 20 },
+    { worryDivider: BigInt(1), numRounds: 1000 },
   ]
     .forEach(
       ({ worryDivider, numRounds }) => {
@@ -112,6 +112,7 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
         let max = BigInt(0);
         let secondMax = BigInt(0);
         [...Array(numRounds)].forEach((_, idx) => {
+          console.clear();
           console.log(`Round: ${idx + 1}`);
           runRound(monkeys, worryDivider);
           for (let i = 0; i < monkeys.length; i++) {
@@ -132,6 +133,7 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
         // )
         //   .slice(0, 2)
         //   .reduce((acc, cur) => acc * cur, BigInt(1));
+        console.log({ max, secondMax });
         console.log(max * secondMax);
       },
     );
