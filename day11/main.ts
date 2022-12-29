@@ -78,10 +78,10 @@ function getMonkeyStatus(monkeys: Monkey[]): string {
 /**
 mutates!
  */
-function runRound(monkeys: Monkey[]): void {
+function runRound(monkeys: Monkey[], worryDivider: number): void {
   for (const m of monkeys) {
     const updatedItems = m.items.map((worryLevel) =>
-      Math.floor(m.op(worryLevel) / 3)
+      Math.floor(m.op(worryLevel) / worryDivider)
     );
     updatedItems.forEach((worryLevel) => {
       m.inspections++;
@@ -94,13 +94,17 @@ function runRound(monkeys: Monkey[]): void {
 
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
-  const monkeys: Monkey[] = parse(text);
-  const numRounds = 20;
 
-  [...Array(numRounds)].forEach((_) => runRound(monkeys));
-  console.log(getMonkeyStatus(monkeys));
-  const result = monkeys.map((m) => m.inspections).sort((a, b) => b - a)
-    .slice(0, 2)
-    .reduce((acc, cur) => acc * cur, 1);
-  console.log(result);
+  [{ worryDivider: 3, numRounds: 20 }, { worryDivider: 1, numRounds: 10000 }]
+    .forEach(
+      ({ worryDivider, numRounds }) => {
+        const monkeys: Monkey[] = parse(text);
+        [...Array(numRounds)].forEach((_) => runRound(monkeys, worryDivider));
+        console.log(getMonkeyStatus(monkeys));
+        const result = monkeys.map((m) => m.inspections).sort((a, b) => b - a)
+          .slice(0, 2)
+          .reduce((acc, cur) => acc * cur, 1);
+        console.log(result);
+      },
+    );
 })();
