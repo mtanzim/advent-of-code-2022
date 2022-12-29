@@ -99,8 +99,8 @@ function runRound(monkeys: Monkey[]): void {
 
   [...Array(numRounds)].forEach((_) => runRound(monkeys));
   console.log(getMonkeyStatus(monkeys));
-  const topInspections = monkeys.map((m) => m.inspections).sort((a, b) => b - a)
+  const result = monkeys.map((m) => m.inspections).sort((a, b) => b - a)
     .slice(0, 2)
     .reduce((acc, cur) => acc * cur, 1);
-  console.log(topInspections);
+  console.log(result);
 })();
