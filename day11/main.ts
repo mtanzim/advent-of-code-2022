@@ -63,8 +63,30 @@ function parse(text: string): Monkey[] {
   });
 }
 
+function getMonkeyStatus(monkeys: Monkey[]): string {
+  return monkeys.map((m) => `Monkey ${m.id}: ${m.items.join(", ")}`).join("\n");
+}
+
+/**
+mutates!
+ */
+function runRound(monkeys: Monkey[]): void {
+  for (const m of monkeys) {
+    const updatedItems = m.items.map((worryLevel) =>
+      Math.floor(m.op(worryLevel) / 3)
+    );
+    updatedItems.forEach((worryLevel) => {
+      const throwToMonkey = m.test(worryLevel) ? m.throwIfTrue : m.throwIfFalse;
+      monkeys[throwToMonkey].items.push(worryLevel);
+    });
+    m.items = [];
+  }
+}
+
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
   const monkeys: Monkey[] = parse(text);
-  console.log(monkeys)
+  console.log(getMonkeyStatus(monkeys));
+  runRound(monkeys);
+  console.log(getMonkeyStatus(monkeys));
 })();
