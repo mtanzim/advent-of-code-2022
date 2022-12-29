@@ -86,7 +86,8 @@ function runRound(monkeys: Monkey[]): void {
 (async function main() {
   const text = await Deno.readTextFile("./day11/input.txt");
   const monkeys: Monkey[] = parse(text);
-  console.log(getMonkeyStatus(monkeys));
-  runRound(monkeys);
+  // console.log(getMonkeyStatus(monkeys));
+
+  [...Array(20)].forEach((_) => runRound(monkeys));
   console.log(getMonkeyStatus(monkeys));
 })();
