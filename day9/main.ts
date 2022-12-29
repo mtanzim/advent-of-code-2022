@@ -79,7 +79,7 @@ function nextTail(head: Coord, tail: Coord) {
 function traverse(
   acc: Accum,
   dir: Direction,
-) {
+): Accum {
   const { head, tail } = acc.currentPos;
   const nextHeadPos = nextHead(head, dir);
   const nextTailPos = nextTail(nextHeadPos, tail);
@@ -87,6 +87,41 @@ function traverse(
 
   return {
     currentPos: { head: nextHeadPos, tail: nextTailPos },
+    tracker: acc.tracker,
+  };
+}
+
+type AccumB = {
+  positions: Array<Coord>;
+  tracker: Set<string>;
+};
+
+function traverseB(
+  acc: AccumB,
+  dir: Direction,
+): AccumB {
+  const [head, ...rest] = Object.values(acc.positions);
+  const nextHeadPos = nextHead(head, dir);
+
+  const nextPositions = rest.reduce(
+    (acc, cur) => {
+      const nextTailPos = nextTail(acc.curHead, cur);
+      return {
+        positions: acc.positions.concat(nextTailPos),
+        curHead: nextTailPos,
+      };
+    },
+    { positions: [nextHeadPos], curHead: nextHeadPos },
+  ).positions;
+
+  const tailPos = nextPositions.at(-1);
+  if (!tailPos) {
+    throw new Error("unable to find tail");
+  }
+  acc.tracker.add(coordToString(tailPos));
+
+  return {
+    positions: nextPositions,
     tracker: acc.tracker,
   };
 }
@@ -103,5 +138,9 @@ function traverse(
     tracker: new Set<string>([coordToString(startingPos)]),
   });
   console.log(tracker.tracker.size);
-  // console.log(tracker.size);
+  const trackerB = moves.reduce(traverseB, {
+    positions: [...Array(10)].map((_) => startingPos),
+    tracker: new Set<string>([coordToString(startingPos)]),
+  });
+  console.log(trackerB.tracker.size);
 })();
