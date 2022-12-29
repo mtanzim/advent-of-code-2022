@@ -41,8 +41,6 @@ function traverse(
 ) {
   const { head, tail } = acc.currentPos;
 
-  acc.tracker.add(coordToString(tail));
-
   const nextHead: Coord = (() => {
     const { x, y } = head;
     switch (dir) {
@@ -60,7 +58,7 @@ function traverse(
   })();
 
   const nextTail: Coord = (() => {
-    const { x: hx, y: hy } = head;
+    const { x: hx, y: hy } = nextHead;
     const { x: tx, y: ty } = tail;
     const dx = hx - tx;
     const dy = hy - ty;
@@ -101,7 +99,7 @@ function traverse(
       head: startingPos,
       tail: startingPos,
     },
-    tracker: new Set<string>(),
+    tracker: new Set<string>([coordToString(startingPos)]),
   });
   console.log(tracker.tracker.size);
   // console.log(tracker.size);
