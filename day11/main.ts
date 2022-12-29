@@ -53,7 +53,7 @@ function parse(text: string): Monkey[] {
       if (isNaN(divisor)) {
         throw new Error("failed to parse test divisor");
       }
-      return (n: number) => n % divisor === Number(0);
+      return (n: number) => n % divisor === 0;
     })();
 
     return {
