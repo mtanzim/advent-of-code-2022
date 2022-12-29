@@ -84,8 +84,8 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
   for (const m of monkeys) {
     for (let i = 0; i < m.items.length; i++) {
       const worryLevel = m.items[i];
-      m.items[i] = m.op(worryLevel) / worryDivider;
-
+      const tempWorry = m.op(worryLevel);
+      m.items[i] = tempWorry / worryDivider;
       const newWorryLevel = m.items[i];
       m.inspections++;
       const throwToMonkey = m.test(newWorryLevel)
@@ -111,7 +111,7 @@ function runRound(monkeys: Monkey[], worryDivider: bigint): void {
         let max = BigInt(0);
         let secondMax = BigInt(0);
         [...Array(numRounds)].forEach((_, idx) => {
-          console.clear();
+          // console.clear();
           console.log(`Round: ${idx + 1}`);
           runRound(monkeys, worryDivider);
           for (let i = 0; i < monkeys.length; i++) {
