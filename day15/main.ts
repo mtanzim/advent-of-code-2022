@@ -97,16 +97,27 @@ function drawGrid(mapping: Mapping): void {
 
   const grid: Grid = [];
 
+  const sensors = new Set(Object.keys(mapping));
+  const beacons = new Set(Object.values(mapping).map(coordToStr));
+
   (function initiMap() {
     for (let y = 0; y <= maxY - offsetY; y++) {
       grid[y] = [];
       for (let x = 0; x <= maxX - offsetX; x++) {
-        grid[y][x] = Elements.EMPTY;
+        const [actualX, actualY] = [x + offsetX, y + offsetY];
+        if (sensors.has(coordToStr({ x: actualX, y: actualY }))) {
+          grid[y][x] = Elements.SENSOR;
+        } else if (beacons.has(coordToStr({ x: actualX, y: actualY }))) {
+          grid[y][x] = Elements.BEACON;
+        } else {
+          grid[y][x] = Elements.EMPTY;
+        }
       }
     }
   })();
 
   console.log(showGrid(grid));
+  console.log(getCoordRange(mapping));
 }
 
 (async function main() {
