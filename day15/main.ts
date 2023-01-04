@@ -42,7 +42,34 @@ function parse(input: string): Mapping {
   }, {});
 }
 
+function getCoordRange(mapping: Mapping): { min: Coord; max: Coord } {
+  const coords = Object.keys(mapping).map(strToCoord).concat(
+    Object.values(mapping),
+  );
+
+  const minX = coords.reduce(
+    (acc, cur) => cur.x < acc ? cur.x : acc,
+    Number.POSITIVE_INFINITY,
+  );
+  const minY = coords.reduce(
+    (acc, cur) => cur.y < acc ? cur.y : acc,
+    Number.POSITIVE_INFINITY,
+  );
+
+  const maxX = coords.reduce(
+    (acc, cur) => cur.x > acc ? cur.x : acc,
+    Number.NEGATIVE_INFINITY,
+  );
+  const maxY = coords.reduce(
+    (acc, cur) => cur.y > acc ? cur.y : acc,
+    Number.NEGATIVE_INFINITY,
+  );
+
+  return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } };
+}
+
 (async function main() {
-  const input = parse(await Deno.readTextFile("./day15/input.txt"));
-  console.log(input);
+  const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
+  const coordRange = getCoordRange(mapping);
+  console.log({ mapping, coordRange });
 })();
