@@ -42,10 +42,18 @@ function parse(input: string): Mapping {
   }, {});
 }
 
+function getCoordsFromMapping(
+  mapping: Mapping,
+): { sensors: Coord[]; beacons: Coord[] } {
+  return {
+    sensors: Object.keys(mapping).map(strToCoord),
+    beacons: Object.values(mapping),
+  };
+}
+
 function getCoordRange(mapping: Mapping): { min: Coord; max: Coord } {
-  const coords = Object.keys(mapping).map(strToCoord).concat(
-    Object.values(mapping),
-  );
+  const { sensors, beacons } = getCoordsFromMapping(mapping);
+  const coords = sensors.concat(beacons);
 
   const minX = coords.reduce(
     (acc, cur) => cur.x < acc ? cur.x : acc,
@@ -89,12 +97,15 @@ function drawGrid(mapping: Mapping): void {
 
   const grid: Grid = [];
 
-  for (let y = 0; y <= maxY - offsetY; y++) {
-    grid[y] = [];
-    for (let x = 0; x <= maxX - offsetX; x++) {
-      grid[y][x] = Elements.EMPTY;
+  (function initiMap() {
+    for (let y = 0; y <= maxY - offsetY; y++) {
+      grid[y] = [];
+      for (let x = 0; x <= maxX - offsetX; x++) {
+        grid[y][x] = Elements.EMPTY;
+      }
     }
-  }
+  })();
+
   console.log(showGrid(grid));
 }
 
