@@ -68,8 +68,37 @@ function getCoordRange(mapping: Mapping): { min: Coord; max: Coord } {
   return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } };
 }
 
+enum Elements {
+  SENSOR = "S",
+  BEACON = "B",
+  EMPTY = ".",
+  NO_BEACON = "#",
+}
+
+type Grid = Array<Array<Elements>>;
+function showGrid(grid: Grid): string {
+  return grid.map((row) => row.join("")).join("\n");
+}
+
+function drawGrid(mapping: Mapping): void {
+  const { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } } =
+    getCoordRange(mapping);
+
+  const offsetX = minX;
+  const offsetY = minY;
+
+  const grid: Grid = [];
+
+  for (let y = 0; y <= maxY - offsetY; y++) {
+    grid[y] = [];
+    for (let x = 0; x <= maxX - offsetX; x++) {
+      grid[y][x] = Elements.EMPTY;
+    }
+  }
+  console.log(showGrid(grid));
+}
+
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
-  const coordRange = getCoordRange(mapping);
-  console.log({ mapping, coordRange });
+  drawGrid(mapping);
 })();
