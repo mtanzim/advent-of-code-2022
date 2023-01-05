@@ -51,88 +51,6 @@ function getCoordsFromMapping(
   };
 }
 
-function getCoordRange(mapping: Mapping): { min: Coord; max: Coord } {
-  const { sensors, beacons } = getCoordsFromMapping(mapping);
-  const coords = sensors.concat(beacons);
-
-  const minX = coords.reduce(
-    (acc, cur) => cur.x < acc ? cur.x : acc,
-    Number.POSITIVE_INFINITY,
-  );
-  const minY = coords.reduce(
-    (acc, cur) => cur.y < acc ? cur.y : acc,
-    Number.POSITIVE_INFINITY,
-  );
-
-  const maxX = coords.reduce(
-    (acc, cur) => cur.x > acc ? cur.x : acc,
-    Number.NEGATIVE_INFINITY,
-  );
-  const maxY = coords.reduce(
-    (acc, cur) => cur.y > acc ? cur.y : acc,
-    Number.NEGATIVE_INFINITY,
-  );
-
-  return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } };
-}
-
-enum Elements {
-  SENSOR = "S",
-  BEACON = "B",
-  EMPTY = ".",
-  NO_BEACON = "#",
-}
-
-type Grid = Array<Array<Elements>>;
-type GridMeta = { offsetX: number; offsetY: number };
-function showGrid(grid: Grid): string {
-  return grid.map((row) => row.join("")).join("\n");
-}
-
-function getActualCoord(arrayCoord: Coord, meta: GridMeta): Coord {
-  const { x, y } = arrayCoord;
-  const { offsetX, offsetY } = meta;
-  return { x: x + offsetX, y: y + offsetY };
-}
-
-function getArrayCoord(actualCoord: Coord, meta: GridMeta): Coord {
-  const { x, y } = actualCoord;
-  const { offsetX, offsetY } = meta;
-  return { x: x - offsetX, y: y - offsetY };
-}
-
-function initializeGrid(mapping: Mapping): [Grid, GridMeta] {
-  console.log(getCoordRange(mapping));
-  const { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } } =
-    getCoordRange(mapping);
-
-  const offsetX = minX;
-  const offsetY = minY;
-
-  const grid: Grid = [];
-  const meta = { offsetX, offsetY };
-
-  const sensors = new Set(Object.keys(mapping));
-  const beacons = new Set(Object.values(mapping).map(coordToStr));
-
-  (function initiMap() {
-    for (let y = 0; y <= maxY - offsetY; y++) {
-      grid[y] = [];
-      for (let x = 0; x <= maxX - offsetX; x++) {
-        const { x: actualX, y: actualY } = getActualCoord({ x, y }, meta);
-        if (sensors.has(coordToStr({ x: actualX, y: actualY }))) {
-          grid[y][x] = Elements.SENSOR;
-        } else if (beacons.has(coordToStr({ x: actualX, y: actualY }))) {
-          grid[y][x] = Elements.BEACON;
-        } else {
-          grid[y][x] = Elements.EMPTY;
-        }
-      }
-    }
-  })();
-  return [grid, meta];
-}
-
 function getManhattanDistance(c1: Coord, c2: Coord): number {
   const { x: x1, y: y1 } = c1;
   const { x: x2, y: y2 } = c2;
@@ -144,8 +62,6 @@ function populateDeadzones(
   beacon: Beacon,
   mapping: Mapping,
 ): Coord[] {
-  // const gridClone: Grid = JSON.parse(JSON.stringify(grid));
-  // const metaClone: GridMeta = JSON.parse(JSON.stringify(meta));
   const mhDistance = getManhattanDistance(sensor, beacon);
   const deadZoneCoords: Coord[] = [];
 
@@ -185,6 +101,7 @@ function populateDeadzones(
           !beaconSet.has(coordToStr({ x, y })) &&
           curDist <= mhDistance
         ) {
+          console.log(`found dead zone ${coordToStr({ x, y })}`);
           deadZoneCoords.push({ x, y });
         }
       }
@@ -207,16 +124,10 @@ function populateDeadzones(
         beacon,
         mapping,
       );
-      // console.log({ sensor });
-      // console.log({ deadZoneCoords });
-      // console.log(showGrid(filledGrid));
-      // console.log(metaFilled);
-      // console.log();
       return deadZoneCoords;
     },
   );
   const filteredDeadzones = allDeadzones.filter((c) => c.y === 10);
   const dedupedFiltered = new Set(filteredDeadzones.map(coordToStr));
-  // console.log(dedupedFiltered);
   console.log(dedupedFiltered.size);
 })();
