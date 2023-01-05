@@ -145,7 +145,7 @@ function populateDeadzones(
   meta: GridMeta,
 ): [Grid, GridMeta] {
   const mhDistance = getManhattanDistance(sensor, beacon);
-  let { x: asx, y: asy } = getArrayCoord(sensor, meta);
+
   const gridClone: Grid = JSON.parse(JSON.stringify(grid));
   const metaClone: GridMeta = JSON.parse(JSON.stringify(meta));
 
@@ -171,15 +171,16 @@ function populateDeadzones(
   ];
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
+    let { x: asx, y: asy } = getArrayCoord(sensor, meta);
     for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
       // add row to bottom
       if (y === gridClone.length) {
         gridClone.push(
           [...Array(gridClone[0].length)].map((_) => Elements.EMPTY),
         );
-        y--;
-        asy--;
-        metaClone.offsetY++;
+        // y--;
+        // asy--;
+        // metaClone.offsetY++;
       }
       // add row to top
       if (y === -1) {
@@ -198,11 +199,11 @@ function populateDeadzones(
           asx++;
           metaClone.offsetX++;
         }
-        if (x === gridClone[0].length) {
+        if (x === gridClone.length) {
           gridClone.forEach((row) => row.push(Elements.EMPTY));
-          x--;
-          asx--;
-          metaClone.offsetX++;
+          // x--;
+          // asx--;
+          // metaClone.offsetX++;
         }
 
         const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
