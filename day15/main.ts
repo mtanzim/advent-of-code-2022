@@ -143,11 +143,12 @@ function populateDeadzones(
   beacon: Beacon,
   grid: Grid,
   meta: GridMeta,
-): [Grid, GridMeta] {
+): [Grid, GridMeta, Coord[]] {
   const gridClone: Grid = JSON.parse(JSON.stringify(grid));
   const metaClone: GridMeta = JSON.parse(JSON.stringify(meta));
   let { x: asx, y: asy } = getArrayCoord(sensor, meta);
   const mhDistance = getManhattanDistance(sensor, beacon);
+  const deadZoneCoords: Coord[] = [];
 
   const quadrants: Array<
     { xfn: (n: number) => number; yfn: (n: number) => number }
@@ -205,29 +206,40 @@ function populateDeadzones(
           curDist <= mhDistance
         ) {
           gridClone[y][x] = Elements.NO_BEACON;
+          const actualCoord = getActualCoord({ x, y }, metaClone);
+          deadZoneCoords.push(actualCoord);
         }
       }
     }
   });
 
-  return [gridClone, metaClone];
+  return [gridClone, metaClone, deadZoneCoords];
 }
 
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
   const [initGrid, initMeta] = initializeGrid(mapping);
 
-  Object.entries(mapping).forEach(([sensorStr, beacon]) => {
-    const sensor = strToCoord(sensorStr);
-    const [filledGrid, metaFilled] = populateDeadzones(
-      sensor,
-      beacon,
-      initGrid,
-      initMeta,
-    );
-    console.log({ sensor });
-    console.log(showGrid(filledGrid));
-    console.log(metaFilled);
-    console.log();
-  });
+  const allDeadzones = Object.entries(mapping).flatMap(
+    ([sensorStr, beacon]) => {
+      console.log(`plotting sensor ${sensorStr}`)
+      const sensor = strToCoord(sensorStr);
+      const [, , deadZoneCoords] = populateDeadzones(
+        sensor,
+        beacon,
+        initGrid,
+        initMeta,
+      );
+      // console.log({ sensor });
+      // console.log({ deadZoneCoords });
+      // console.log(showGrid(filledGrid));
+      // console.log(metaFilled);
+      // console.log();
+      return deadZoneCoords;
+    },
+  );
+  const filteredDeadzones = allDeadzones.filter((c) => c.y === 10);
+  const dedupedFiltered = new Set(filteredDeadzones.map(coordToStr));
+  // console.log(dedupedFiltered);
+  console.log(dedupedFiltered.size);
 })();
