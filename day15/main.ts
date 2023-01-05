@@ -148,18 +148,39 @@ function populateDeadzones(
   const { x: asx, y: asy } = getArrayCoord(sensor, meta);
   const gridClone = JSON.parse(JSON.stringify(grid));
 
+  const quadrants = [
+    {
+      xfn: (x: number) => x + 1,
+      yfn: (y: number) => y + 1,
+    },
+    // {
+    //   xfn: (x: number) => x - 1,
+    //   yfn: (y: number) => y + 1,
+    // },
+    // {
+    //   xfn: (x: number) => x + 1,
+    //   yfn: (y: number) => y - 1,
+    // },
+    // {
+    //   xfn: (x: number) => x - 1,
+    //   yfn: (y: number) => y - 1,
+    // },
+  ];
   // TODO: what if array overflows?
-  for (let y = asy; Math.abs(y - asy) <= mhDistance; y++) {
-    for (let x = asx; Math.abs(x - asx) <= mhDistance; x++) {
-      const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
-      if (
-        gridClone[y][x] === Elements.EMPTY &&
-        curDist <= mhDistance
-      ) {
-        gridClone[y][x] = Elements.NO_BEACON;
+  quadrants.forEach((q) => {
+    for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
+      for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
+        const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
+        if (
+          gridClone[y][x] === Elements.EMPTY &&
+          curDist <= mhDistance
+        ) {
+          gridClone[y][x] = Elements.NO_BEACON;
+        }
       }
     }
-  }
+  });
+
   return [gridClone, meta];
 }
 
