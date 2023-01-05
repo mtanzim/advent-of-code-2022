@@ -145,31 +145,66 @@ function populateDeadzones(
   meta: GridMeta,
 ): [Grid, GridMeta] {
   const mhDistance = getManhattanDistance(sensor, beacon);
-  const { x: asx, y: asy } = getArrayCoord(sensor, meta);
-  const gridClone = JSON.parse(JSON.stringify(grid));
+  let { x: asx, y: asy } = getArrayCoord(sensor, meta);
+  const gridClone: Grid = JSON.parse(JSON.stringify(grid));
+  const metaClone: GridMeta = JSON.parse(JSON.stringify(meta));
 
-  const quadrants = [
+  const quadrants: Array<
+    { xfn: (n: number) => number; yfn: (n: number) => number }
+  > = [
     {
       xfn: (x: number) => x + 1,
       yfn: (y: number) => y + 1,
     },
-    // {
-    //   xfn: (x: number) => x - 1,
-    //   yfn: (y: number) => y + 1,
-    // },
-    // {
-    //   xfn: (x: number) => x + 1,
-    //   yfn: (y: number) => y - 1,
-    // },
-    // {
-    //   xfn: (x: number) => x - 1,
-    //   yfn: (y: number) => y - 1,
-    // },
+    {
+      xfn: (x: number) => x - 1,
+      yfn: (y: number) => y + 1,
+    },
+    {
+      xfn: (x: number) => x + 1,
+      yfn: (y: number) => y - 1,
+    },
+    {
+      xfn: (x: number) => x - 1,
+      yfn: (y: number) => y - 1,
+    },
   ];
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
     for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
+      // add row to bottom
+      if (y === gridClone.length) {
+        gridClone.push(
+          [...Array(gridClone[0].length)].map((_) => Elements.EMPTY),
+        );
+        y--;
+        asy--;
+        metaClone.offsetY++;
+      }
+      // add row to top
+      if (y === -1) {
+        gridClone.push(
+          [...Array(gridClone[0].length)].map((_) => Elements.EMPTY),
+        );
+        y++;
+        asy++;
+        metaClone.offsetY--;
+      }
       for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
+        // add column to left
+        if (x === -1) {
+          gridClone.forEach((row) => row.unshift(Elements.EMPTY));
+          x++;
+          asx++;
+          metaClone.offsetX++;
+        }
+        if (x === gridClone[0].length) {
+          gridClone.forEach((row) => row.push(Elements.EMPTY));
+          x--;
+          asx--;
+          metaClone.offsetX++;
+        }
+
         const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
         if (
           gridClone[y][x] === Elements.EMPTY &&
@@ -181,17 +216,23 @@ function populateDeadzones(
     }
   });
 
-  return [gridClone, meta];
+  return [gridClone, metaClone];
 }
 
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
   const [initGrid, initMeta] = initializeGrid(mapping);
-  console.log(showGrid(initGrid));
-  console.log(initMeta);
+  // console.log(showGrid(initGrid));
+  // console.log(initMeta);
 
   const sensor = { x: 8, y: 7 };
   const beacon = mapping?.[coordToStr(sensor)];
-  const [filledGrid] = populateDeadzones(sensor, beacon, initGrid, initMeta);
+  const [filledGrid, metaFilled] = populateDeadzones(
+    sensor,
+    beacon,
+    initGrid,
+    initMeta,
+  );
   console.log(showGrid(filledGrid));
+  console.log(metaFilled);
 })();
