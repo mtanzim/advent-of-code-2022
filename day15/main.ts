@@ -171,7 +171,6 @@ function populateDeadzones(
   ];
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
-
     for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
       // add row to bottom
       if (y === gridClone.length) {
@@ -217,17 +216,18 @@ function populateDeadzones(
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
   const [initGrid, initMeta] = initializeGrid(mapping);
-  // console.log(showGrid(initGrid));
-  // console.log(initMeta);
 
-  const sensor = { x: 8, y: 7 };
-  const beacon = mapping?.[coordToStr(sensor)];
-  const [filledGrid, metaFilled] = populateDeadzones(
-    sensor,
-    beacon,
-    initGrid,
-    initMeta,
-  );
-  console.log(showGrid(filledGrid));
-  console.log(metaFilled);
+  Object.entries(mapping).forEach(([sensorStr, beacon]) => {
+    const sensor = strToCoord(sensorStr);
+    const [filledGrid, metaFilled] = populateDeadzones(
+      sensor,
+      beacon,
+      initGrid,
+      initMeta,
+    );
+    console.log({ sensor });
+    console.log(showGrid(filledGrid));
+    console.log(metaFilled);
+    console.log();
+  });
 })();
