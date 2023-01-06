@@ -118,10 +118,9 @@ function populateDeadzones(
 
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
-  const yInterested = 10;
-
 
   (function partA() {
+    const yInterested = 10;
     const coordSet = new Set();
     Object.entries(mapping).forEach(
       ([sensorStr, beacon]) => {
@@ -139,8 +138,7 @@ function populateDeadzones(
       },
     );
     console.log(coordSet.size);
-  })()
-
+  })();
 
   // const yMax = 20;
   // const xMax = 20;
