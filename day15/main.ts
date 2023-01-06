@@ -57,11 +57,33 @@ function getManhattanDistance(c1: Coord, c2: Coord): number {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 }
 
+const quadrants: Array<
+  { xfn: (n: number) => number; yfn: (n: number) => number }
+> = [
+  {
+    xfn: (x: number) => x + 1,
+    yfn: (y: number) => y + 1,
+  },
+  {
+    xfn: (x: number) => x - 1,
+    yfn: (y: number) => y + 1,
+  },
+  {
+    xfn: (x: number) => x + 1,
+    yfn: (y: number) => y - 1,
+  },
+  {
+    xfn: (x: number) => x - 1,
+    yfn: (y: number) => y - 1,
+  },
+];
+
 function populateDeadzones(
   sensor: Sensor,
   beacon: Beacon,
   mapping: Mapping,
   y: number,
+  xMax?: number,
 ): Coord[] {
   const mhDistance = getManhattanDistance(sensor, beacon);
   const deadZoneCoords: Coord[] = [];
@@ -70,32 +92,15 @@ function populateDeadzones(
   const sensorSet = new Set(sensors.map(coordToStr));
   const beaconSet = new Set(beacons.map(coordToStr));
 
-  const quadrants: Array<
-    { xfn: (n: number) => number; yfn: (n: number) => number }
-  > = [
-    {
-      xfn: (x: number) => x + 1,
-      yfn: (y: number) => y + 1,
-    },
-    {
-      xfn: (x: number) => x - 1,
-      yfn: (y: number) => y + 1,
-    },
-    {
-      xfn: (x: number) => x + 1,
-      yfn: (y: number) => y - 1,
-    },
-    {
-      xfn: (x: number) => x - 1,
-      yfn: (y: number) => y - 1,
-    },
-  ];
-
   const { x: asx, y: asy } = sensor;
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
     // for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
+
     for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
+      if (xMax && (x > xMax || x < 0)) {
+        break;
+      }
       const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
       if (
         !sensorSet.has(coordToStr({ x, y })) &&
@@ -113,24 +118,49 @@ function populateDeadzones(
 
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
-  const yInterested = 2000000;
+  const yInterested = 10;
 
-  const coordSet = new Set();
-  Object.entries(mapping).forEach(
-    ([sensorStr, beacon]) => {
-      console.log(`plotting sensor ${sensorStr}`);
-      const sensor = strToCoord(sensorStr);
-      const deadZoneCoords = populateDeadzones(
-        sensor,
-        beacon,
-        mapping,
-        yInterested,
-      );
-      deadZoneCoords.forEach((c) => {
-        coordSet.add(coordToStr(c));
-      });
-    },
-  );
-  // const dedupedFiltered = new Set(allDeadzones.map(coordToStr));
-  console.log(coordSet.size);
+
+  (function partA() {
+    const coordSet = new Set();
+    Object.entries(mapping).forEach(
+      ([sensorStr, beacon]) => {
+        console.log(`plotting sensor ${sensorStr}`);
+        const sensor = strToCoord(sensorStr);
+        const deadZoneCoords = populateDeadzones(
+          sensor,
+          beacon,
+          mapping,
+          yInterested,
+        );
+        deadZoneCoords.forEach((c) => {
+          coordSet.add(coordToStr(c));
+        });
+      },
+    );
+    console.log(coordSet.size);
+  })()
+
+
+  // const yMax = 20;
+  // const xMax = 20;
+  // const coordSet = new Set();
+  // [...Array(yMax)].forEach((_, idx) => {
+  //   Object.entries(mapping).forEach(
+  //     ([sensorStr, beacon]) => {
+  //       console.log(`plotting sensor ${sensorStr}`);
+  //       const sensor = strToCoord(sensorStr);
+  //       const deadZoneCoords = populateDeadzones(
+  //         sensor,
+  //         beacon,
+  //         mapping,
+  //         idx,
+  //         xMax,
+  //       );
+  //       deadZoneCoords.forEach((c) => {
+  //         coordSet.add(coordToStr(c));
+  //       });
+  //     },
+  //   );
+  // });
 })();
