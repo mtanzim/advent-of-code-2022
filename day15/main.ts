@@ -140,25 +140,46 @@ function populateDeadzones(
     console.log(coordSet.size);
   })();
 
-  // const yMax = 20;
-  // const xMax = 20;
-  // const coordSet = new Set();
-  // [...Array(yMax)].forEach((_, idx) => {
-  //   Object.entries(mapping).forEach(
-  //     ([sensorStr, beacon]) => {
-  //       console.log(`plotting sensor ${sensorStr}`);
-  //       const sensor = strToCoord(sensorStr);
-  //       const deadZoneCoords = populateDeadzones(
-  //         sensor,
-  //         beacon,
-  //         mapping,
-  //         idx,
-  //         xMax,
-  //       );
-  //       deadZoneCoords.forEach((c) => {
-  //         coordSet.add(coordToStr(c));
-  //       });
-  //     },
-  //   );
-  // });
+  (function partB() {
+    const yMax = 20;
+    const xMax = 20;
+    const xMult = 4000000
+    const coordSet = new Set();
+    [...Array(yMax)].forEach((_, y) => {
+      Object.entries(mapping).forEach(
+        ([sensorStr, beacon]) => {
+          console.log(`plotting sensor ${sensorStr}`);
+          const sensor = strToCoord(sensorStr);
+          const deadZoneCoords = populateDeadzones(
+            sensor,
+            beacon,
+            mapping,
+            y,
+            xMax,
+          );
+          deadZoneCoords.forEach((c) => {
+            coordSet.add(coordToStr(c));
+          });
+          coordSet.add(coordToStr(sensor));
+          coordSet.add(coordToStr(beacon));
+        },
+      );
+    });
+
+    const distressCoord = (() => {
+      for (let y = 0; y <= yMax; y++) {
+        for (let x = 0; x <= xMax; x++) {
+          if (!coordSet.has(coordToStr({ x, y }))) {
+            return { x, y };
+          }
+        }
+      }
+    })();
+    if (!distressCoord) {
+      throw new Error("distress signal not found!");
+    }
+    const res = distressCoord.x * xMult + distressCoord.y;
+
+    console.log(res);
+  })();
 })();
