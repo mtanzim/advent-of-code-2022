@@ -61,6 +61,7 @@ function populateDeadzones(
   sensor: Sensor,
   beacon: Beacon,
   mapping: Mapping,
+  y: number,
 ): Coord[] {
   const mhDistance = getManhattanDistance(sensor, beacon);
   const deadZoneCoords: Coord[] = [];
@@ -93,19 +94,19 @@ function populateDeadzones(
   const { x: asx, y: asy } = sensor;
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
-    for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
-      for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
-        const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
-        if (
-          !sensorSet.has(coordToStr({ x, y })) &&
-          !beaconSet.has(coordToStr({ x, y })) &&
-          curDist <= mhDistance
-        ) {
-          console.log(`found dead zone ${coordToStr({ x, y })}`);
-          deadZoneCoords.push({ x, y });
-        }
+    // for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
+    for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
+      const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
+      if (
+        !sensorSet.has(coordToStr({ x, y })) &&
+        !beaconSet.has(coordToStr({ x, y })) &&
+        curDist <= mhDistance
+      ) {
+        // console.log(`found dead zone ${coordToStr({ x, y })}`);
+        deadZoneCoords.push({ x, y });
       }
     }
+    // }
   });
 
   return deadZoneCoords;
@@ -123,11 +124,11 @@ function populateDeadzones(
         sensor,
         beacon,
         mapping,
+        2000000,
       );
       return deadZoneCoords;
     },
   );
-  const filteredDeadzones = allDeadzones.filter((c) => c.y === 10);
-  const dedupedFiltered = new Set(filteredDeadzones.map(coordToStr));
+  const dedupedFiltered = new Set(allDeadzones.map(coordToStr));
   console.log(dedupedFiltered.size);
 })();
