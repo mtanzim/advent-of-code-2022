@@ -102,7 +102,6 @@ function populateDeadzones(
         !beaconSet.has(coordToStr({ x, y })) &&
         curDist <= mhDistance
       ) {
-        // console.log(`found dead zone ${coordToStr({ x, y })}`);
         deadZoneCoords.push({ x, y });
       }
     }
@@ -114,9 +113,10 @@ function populateDeadzones(
 
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
-  // const [initGrid, initMeta] = initializeGrid(mapping);
+  const yInterested = 2000000;
 
-  const allDeadzones = Object.entries(mapping).flatMap(
+  const coordSet = new Set();
+  Object.entries(mapping).forEach(
     ([sensorStr, beacon]) => {
       console.log(`plotting sensor ${sensorStr}`);
       const sensor = strToCoord(sensorStr);
@@ -124,11 +124,13 @@ function populateDeadzones(
         sensor,
         beacon,
         mapping,
-        2000000,
+        yInterested,
       );
-      return deadZoneCoords;
+      deadZoneCoords.forEach((c) => {
+        coordSet.add(coordToStr(c));
+      });
     },
   );
-  const dedupedFiltered = new Set(allDeadzones.map(coordToStr));
-  console.log(dedupedFiltered.size);
+  // const dedupedFiltered = new Set(allDeadzones.map(coordToStr));
+  console.log(coordSet.size);
 })();
