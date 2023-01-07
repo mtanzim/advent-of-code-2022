@@ -95,8 +95,6 @@ function populateDeadzones(
   const { x: asx, y: asy } = sensor;
   // TODO: what if array overflows?
   quadrants.forEach((q) => {
-    // for (let y = asy; Math.abs(y - asy) <= mhDistance; y = q.yfn(y)) {
-
     for (let x = asx; Math.abs(x - asx) <= mhDistance; x = q.xfn(x)) {
       if (xMax && (x > xMax || x < 0)) {
         break;
@@ -110,7 +108,6 @@ function populateDeadzones(
         deadZoneCoords.push({ x, y });
       }
     }
-    // }
   });
 
   return deadZoneCoords;
@@ -145,58 +142,26 @@ function populateDeadzones(
     const yMax = 20;
     const xMax = 20;
     const xMult = 4000000;
-    const coordSet = [...Array(yMax+1)].map((_) =>
-      [...Array(xMax+1)].map((_) => true)
-    );
 
-    console.log(coordSet);
+    // console.log(coordSet);
 
-    [...Array(yMax)].forEach((_, y) => {
-      Object.entries(mapping).forEach(
+    const ranges = [...Array(yMax)].map((_, y) => {
+      const deadZonesInY: Coord[] = Object.entries(mapping).flatMap(
         ([sensorStr, beacon]) => {
           console.log(`plotting sensor ${sensorStr}`);
           const sensor = strToCoord(sensorStr);
-          const deadZoneCoords = populateDeadzones(
+          return populateDeadzones(
             sensor,
             beacon,
             mapping,
             y,
             xMax,
           );
-          deadZoneCoords.forEach((c) => {
-            coordSet[c.y][c.x] = false;
-          });
-          if (
-            sensor.x >= 0 && sensor.x <= xMax && sensor.y >= 0 &&
-            sensor.y <= yMax
-          ) {
-            coordSet[sensor.y][sensor.x] = false;
-          }
-          if (
-            beacon.x >= 0 && beacon.x <= xMax && beacon.y >= 0 &&
-            beacon.y <= yMax
-          ) {
-            coordSet[beacon.y][beacon.x] = false;
-          }
         },
       );
+      return [...new Set(deadZonesInY.map((c) => c.x))].sort((a, b) => a - b)
+        .slice(0, xMax + 1);
     });
-
-    const distressCoord = (() => {
-      for (let y = 0; y <= yMax; y++) {
-        for (let x = 0; x <= xMax; x++) {
-          if (coordSet[y][x]) {
-            return { x, y };
-          }
-        }
-      }
-    })();
-    if (!distressCoord) {
-      throw new Error("distress signal not found!");
-    }
-    const res = distressCoord.x * xMult + distressCoord.y;
-
-    console.log(distressCoord);
-    console.log(res);
+    console.log(ranges);
   })();
 })();
