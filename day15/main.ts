@@ -58,24 +58,24 @@ function getManhattanDistance(c1: Coord, c2: Coord): number {
 }
 
 const quadrants: Array<
-  { xfn: (n: number) => number; yfn: (n: number) => number }
+  { xfn: (n: number) => number }
 > = [
   {
     xfn: (x: number) => x + 1,
-    yfn: (y: number) => y + 1,
+    // yfn: (y: number) => y + 1,
   },
   {
     xfn: (x: number) => x - 1,
-    yfn: (y: number) => y + 1,
+    // yfn: (y: number) => y + 1,
   },
-  {
-    xfn: (x: number) => x + 1,
-    yfn: (y: number) => y - 1,
-  },
-  {
-    xfn: (x: number) => x - 1,
-    yfn: (y: number) => y - 1,
-  },
+  // {
+  //   xfn: (x: number) => x + 1,
+  //   yfn: (y: number) => y - 1,
+  // },
+  // {
+  //   xfn: (x: number) => x - 1,
+  //   yfn: (y: number) => y - 1,
+  // },
 ];
 
 function populateDeadzones(
@@ -84,13 +84,14 @@ function populateDeadzones(
   mapping: Mapping,
   y: number,
   xMax?: number,
-): Coord[] {
+): number[] {
   const mhDistance = getManhattanDistance(sensor, beacon);
-  const deadZoneCoords: Coord[] = [];
+  // const deadZoneCoords: Coord[] = [];
+  const deadZoneXs: number[] = [];
 
-  const { sensors, beacons } = getCoordsFromMapping(mapping);
-  const sensorSet = new Set(sensors.map(coordToStr));
-  const beaconSet = new Set(beacons.map(coordToStr));
+  // const { sensors, beacons } = getCoordsFromMapping(mapping);
+  // const sensorSet = new Set(sensors.map(coordToStr));
+  // const beaconSet = new Set(beacons.map(coordToStr));
 
   const { x: asx, y: asy } = sensor;
   // TODO: what if array overflows?
@@ -105,12 +106,12 @@ function populateDeadzones(
         // !beaconSet.has(coordToStr({ x, y })) &&
         curDist <= mhDistance
       ) {
-        deadZoneCoords.push({ x, y });
+        deadZoneXs.push(x);
       }
     }
   });
 
-  return deadZoneCoords;
+  return deadZoneXs;
 }
 
 (async function main() {
@@ -139,15 +140,15 @@ function populateDeadzones(
   // partA();
 
   (function partB() {
-    const yMax = 20;
-    const xMax = 20;
+    const yMax = 4000000;
+    const xMax = 4000000;
     const xMult = 4000000;
 
     // console.log(coordSet);
 
     // const ranges = [...Array(yMax + 1)].forEach((_, y) => {
     for (let y = 0; y <= yMax; y++) {
-      const deadZonesInY: Coord[] = Object.entries(mapping).flatMap(
+      const deadZonesInY: number[] = Object.entries(mapping).flatMap(
         ([sensorStr, beacon]) => {
           console.log(`plotting sensor ${sensorStr} for y: ${y}`);
           const sensor = strToCoord(sensorStr);
@@ -160,7 +161,7 @@ function populateDeadzones(
           );
         },
       );
-      const xNotInPlace = [...new Set(deadZonesInY.map((c) => c.x))].sort((
+      const xNotInPlace = [...new Set(deadZonesInY)].sort((
         a,
         b,
       ) => a - b)
