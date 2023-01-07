@@ -101,8 +101,8 @@ function populateDeadzones(
       }
       const curDist = getManhattanDistance({ x, y }, { x: asx, y: asy });
       if (
-        !sensorSet.has(coordToStr({ x, y })) &&
-        !beaconSet.has(coordToStr({ x, y })) &&
+        // !sensorSet.has(coordToStr({ x, y })) &&
+        // !beaconSet.has(coordToStr({ x, y })) &&
         curDist <= mhDistance
       ) {
         deadZoneCoords.push({ x, y });
@@ -145,10 +145,11 @@ function populateDeadzones(
 
     // console.log(coordSet);
 
-    const ranges = [...Array(yMax)].map((_, y) => {
+    // const ranges = [...Array(yMax + 1)].forEach((_, y) => {
+    for (let y = 0; y <= yMax; y++) {
       const deadZonesInY: Coord[] = Object.entries(mapping).flatMap(
         ([sensorStr, beacon]) => {
-          console.log(`plotting sensor ${sensorStr}`);
+          console.log(`plotting sensor ${sensorStr} for y: ${y}`);
           const sensor = strToCoord(sensorStr);
           return populateDeadzones(
             sensor,
@@ -159,9 +160,18 @@ function populateDeadzones(
           );
         },
       );
-      return [...new Set(deadZonesInY.map((c) => c.x))].sort((a, b) => a - b)
-        .slice(0, xMax + 1);
-    });
-    console.log(ranges);
+      const xNotInPlace = [...new Set(deadZonesInY.map((c) => c.x))].sort((
+        a,
+        b,
+      ) => a - b)
+        .slice(0, xMax + 1).find((i, idx) => i !== idx);
+      if (xNotInPlace) {
+        const stressCoord = { x: xNotInPlace - 1, y };
+        const res = stressCoord.x * xMult + stressCoord.y;
+        console.log({ stressCoord, res });
+        break;
+      }
+    }
+    // });
   })();
 })();
