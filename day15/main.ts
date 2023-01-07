@@ -119,7 +119,7 @@ function populateDeadzones(
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
 
-  (function partA() {
+  function partA() {
     const yInterested = 10;
     const coordSet = new Set();
     Object.entries(mapping).forEach(
@@ -138,13 +138,19 @@ function populateDeadzones(
       },
     );
     console.log(coordSet.size);
-  })();
+  }
+  // partA();
 
   (function partB() {
     const yMax = 20;
     const xMax = 20;
-    const xMult = 4000000
-    const coordSet = new Set();
+    const xMult = 4000000;
+    const coordSet = [...Array(yMax+1)].map((_) =>
+      [...Array(xMax+1)].map((_) => true)
+    );
+
+    console.log(coordSet);
+
     [...Array(yMax)].forEach((_, y) => {
       Object.entries(mapping).forEach(
         ([sensorStr, beacon]) => {
@@ -158,10 +164,20 @@ function populateDeadzones(
             xMax,
           );
           deadZoneCoords.forEach((c) => {
-            coordSet.add(coordToStr(c));
+            coordSet[c.y][c.x] = false;
           });
-          coordSet.add(coordToStr(sensor));
-          coordSet.add(coordToStr(beacon));
+          if (
+            sensor.x >= 0 && sensor.x <= xMax && sensor.y >= 0 &&
+            sensor.y <= yMax
+          ) {
+            coordSet[sensor.y][sensor.x] = false;
+          }
+          if (
+            beacon.x >= 0 && beacon.x <= xMax && beacon.y >= 0 &&
+            beacon.y <= yMax
+          ) {
+            coordSet[beacon.y][beacon.x] = false;
+          }
         },
       );
     });
@@ -169,7 +185,7 @@ function populateDeadzones(
     const distressCoord = (() => {
       for (let y = 0; y <= yMax; y++) {
         for (let x = 0; x <= xMax; x++) {
-          if (!coordSet.has(coordToStr({ x, y }))) {
+          if (coordSet[y][x]) {
             return { x, y };
           }
         }
@@ -180,6 +196,7 @@ function populateDeadzones(
     }
     const res = distressCoord.x * xMult + distressCoord.y;
 
+    console.log(distressCoord);
     console.log(res);
   })();
 })();
