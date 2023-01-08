@@ -82,6 +82,11 @@ function populateDeadzones(
   };
 }
 
+type Range = [number, number];
+function foldRanges(r: Range[]): Range {
+  console.log(r);
+}
+
 (async function main() {
   const mapping = parse(await Deno.readTextFile("./day15/input.txt"));
 
@@ -103,6 +108,7 @@ function populateDeadzones(
         },
       );
       console.log({ deadZoneRanges });
+      foldRanges(deadZoneRanges.map((dz) => [dz.minX, dz.maxX]));
     })();
   })();
 })();
