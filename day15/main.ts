@@ -103,17 +103,6 @@ function populateDeadzones(
         },
       );
       console.log({ deadZoneRanges });
-      // const xNotInPlace = [...new Set(deadZonesInY)].sort((
-      //   a,
-      //   b,
-      // ) => a - b)
-      //   .slice(0, xMax + 1).find((i, idx) => i !== idx);
-      // if (xNotInPlace) {
-      //   const stressCoord = { x: xNotInPlace - 1, y };
-      //   const res = stressCoord.x * xMult + stressCoord.y;
-      //   console.log({ stressCoord, res });
-      //   return;
-      // }
     })();
   })();
 })();
